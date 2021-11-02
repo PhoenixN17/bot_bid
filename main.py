@@ -7,7 +7,7 @@ import random
 from tool import language_check, log, create_inlineKeyboard, create_markup
 from app import bot, tbf, fsm, db
 
-
+# f
 #db.session.add(models.Email(mail="jeck@gmail.com"))
 #db.session.add(models.Quiz(quiz_type="text", quiz_media_id="text", question="whho?", answer="mhe", false=pickle.dumps(["he", "she", "it"]), cost=10))
 #db.session.commit()
@@ -200,7 +200,6 @@ if __name__ == '__main__':
 
 '''
 
-# Если нужна будет помощь с установкой бота на этот же хостинг, попроси у моего заказчика мои контакты, скорее всего они у него будут
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
   bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
