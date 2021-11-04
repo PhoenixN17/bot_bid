@@ -1,5 +1,5 @@
 from app import db
-
+from datetime import datetime
 
 def auto_repr(self):
     """ Автоматическое REPR форматирование для обьектов """
@@ -83,8 +83,52 @@ class CompleteQuiz(db.Model):
 	quiz_id = db.Column(db.Integer())
 	user_id = db.Column(db.Integer())
 	status = db.Column(db.String())
+	cost = db.Column(db.Integer())
 
 	
+
+	def __repr__(self):
+		return auto_repr(self)
+
+class Auc(db.Model):
+	"""Модель выполненых вопросов"""
+	__tablename__ = "auc"
+	id = db.Column(db.Integer(), primary_key=True)
+	pic = db.Column(db.String())
+	name = db.Column(db.String())
+	shortname = db.Column(db.String())
+	disc = db.Column(db.String())
+	cost = db.Column(db.Integer())
+	status = db.Column(db.String())
+	
+
+	def __repr__(self):
+		return auto_repr(self)
+
+
+class ActiveLot(db.Model):
+	"""Модель выполненых вопросов"""
+	__tablename__ = "active_lot"
+	id = db.Column(db.Integer(), primary_key=True)
+	lot_id = db.Column(db.Integer())
+	winner_id = db.Column(db.Integer())
+	cost = db.Column(db.Integer())	
+	bet_date = db.Column(db.DateTime(), default=datetime.utcnow)
+
+
+	def __repr__(self):
+		return auto_repr(self)
+
+
+
+class Players(db.Model):
+	"""Модель выполненых вопросов"""
+	__tablename__ = "players"
+	id = db.Column(db.Integer(), primary_key=True)
+	lot_id = db.Column(db.Integer())
+	user_id = db.Column(db.Integer())
+
+
 
 	def __repr__(self):
 		return auto_repr(self)
