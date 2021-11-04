@@ -8,7 +8,7 @@ import forms
 import random
 from datetime import datetime, timedelta
 from tool import language_check, log, create_inlineKeyboard, create_markup
-from app import bot, tbf, fsm, db
+from app import bot, tbf, fsm, db, app
 
 # f
 #db.session.add(models.Email(mail="jerck@gmail.com"))
