@@ -4,7 +4,7 @@ import config
 import pickle
 import json
 import time
-import request
+import requests
 import forms
 import os
 import random
