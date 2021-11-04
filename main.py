@@ -473,7 +473,7 @@ if __name__ == '__main__':
 
 '''
 
-@app.route('/' + TOKEN, methods=['POST'])
+@app.route('/' + config.TOKEN, methods=['POST'])
 def getMessage():
   bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
   return "!", 200
@@ -482,7 +482,7 @@ def getMessage():
 @app.route("/")
 def webhook():
   bot.remove_webhook()
-  bot.set_webhook(url=HEROKU_LINK + TOKEN)
+  bot.set_webhook(url=config.HEROKU_LINK + config.TOKEN)
   return "!", 200
 
 
