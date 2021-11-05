@@ -309,7 +309,8 @@ def unreg_wall(message):
 def quiz_send(message):
 	if message.text == language_check()["quiz"]["start_quiz"]:
 		text = language_check()
-		bot.send_message(message.from_user.id, text["quiz"]["first_message"])
+		user = models.BotUser.query.filter_by(user_id=message.from_user.id).first()
+		bot.send_message(message.from_user.id, text["quiz"]["first_message"].format(user.name))
 		bot.send_message(message.from_user.id, text["quiz"]["second_message"])
 		bot.send_message(message.from_user.id, text["quiz"]["third_message"], reply_markup=create_markup(text["quiz"]["next_question"]))
 	else:
