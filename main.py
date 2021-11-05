@@ -307,47 +307,53 @@ def unreg_wall(message):
 @bot.message_handler(func=lambda message: True and (message.text == language_check()["quiz"]["start_quiz"] or message.text == language_check()["quiz"]["next_question"]))
 @log
 def quiz_send(message):
-	quiz = []
-	all_quiz = models.Quiz.query.all()
-	user_complete_quiz = models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()
-	# Убираем пройденые викторины и сортируем список
-	complete_quiz = [i.quiz_id for i in user_complete_quiz]
-	for i in all_quiz:
-		if i.id in complete_quiz:
-			continue
-		quiz.append(i)
-
-	if len(quiz) != 0:
-		# -- Выдача случайного вопроса -- #
-		quiz = random.choice(quiz)
-		
-		  # генерация главиатуры для викторины #
-		quiz_buttons = [i for i in pickle.loads(quiz.false)]
-		quiz_buttons.append(quiz.answer)
-		quiz_button = random.shuffle(quiz_buttons)
-		quiz_keyboard = {}
-		for i in range(len(quiz_buttons)):
-			quiz_keyboard[quiz_buttons[i]] = f"answer_quiz {quiz.id} {i}"
-
-		
-		  # Отправка #
-		if quiz.quiz_type == "text":
-			bot.send_message(message.from_user.id, quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
-		elif quiz.quiz_type == "photo":
-			bot.send_photo(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
-		elif quiz.quiz_type == "video":
-			bot.send_video(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
-		elif quiz.quiz_type == "audio":
-			bot.send_audio(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
-	else:
-		count = 0
-		for i in user_complete_quiz:
-			if i.status == "win":
-				count += int(i.cost)
+	if message.text == language_check()["quiz"]["start_quiz"]:
 		text = language_check()
-		bot.send_message(message.from_user.id, text["quiz"]["end"])
-		bot.send_message(message.from_user.id, text["quiz"]["count"].format(count), reply_markup=create_markup(text["quiz"]["start_quiz"]))
-		return
+		bot.send_message(message.from_user.id, text["quiz"]["first_message"])
+		bot.send_message(message.from_user.id, text["quiz"]["second_message"])
+		bot.send_message(message.from_user.id, text["quiz"]["third_message"], reply_markup=create_markup(text["quiz"]["next_question"]))
+	else:
+		quiz = []
+		all_quiz = models.Quiz.query.all()
+		user_complete_quiz = models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()
+		# Убираем пройденые викторины и сортируем список
+		complete_quiz = [i.quiz_id for i in user_complete_quiz]
+		for i in all_quiz:
+			if i.id in complete_quiz:
+				continue
+			quiz.append(i)
+
+		if len(quiz) != 0:
+			# -- Выдача случайного вопроса -- #
+			quiz = random.choice(quiz)
+			
+			  # генерация главиатуры для викторины #
+			quiz_buttons = [i for i in pickle.loads(quiz.false)]
+			quiz_buttons.append(quiz.answer)
+			quiz_button = random.shuffle(quiz_buttons)
+			quiz_keyboard = {}
+			for i in range(len(quiz_buttons)):
+				quiz_keyboard[quiz_buttons[i]] = f"answer_quiz {quiz.id} {i}"
+
+			
+			  # Отправка #
+			if quiz.quiz_type == "text":
+				bot.send_message(message.from_user.id, quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
+			elif quiz.quiz_type == "photo":
+				bot.send_photo(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
+			elif quiz.quiz_type == "video":
+				bot.send_video(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
+			elif quiz.quiz_type == "audio":
+				bot.send_audio(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
+		else:
+			count = 0
+			for i in user_complete_quiz:
+				if i.status == "win":
+					count += int(i.cost)
+			text = language_check()
+			bot.send_message(message.from_user.id, text["quiz"]["end"])
+			bot.send_message(message.from_user.id, text["quiz"]["count"].format(count), reply_markup=create_markup(text["quiz"]["start_quiz"]))
+			return
 
 # Обработка ответа
 @bot.callback_query_handler(func=lambda call: True and call.data.split(" ")[0] == "answer_quiz")
