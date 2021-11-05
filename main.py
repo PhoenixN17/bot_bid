@@ -226,28 +226,38 @@ def start(message):
 	if models.BotUser.query.filter_by(user_id=message.from_user.id).first() != None:
 		bot.send_message(message.from_user.id, text["hi_again"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
 	else:
-		fsm.set_state(message.from_user.id, "enter_surname")
-		bot.send_message(message.from_user.id, text["register"]["enter_surname"])
+		fsm.set_state(message.from_user.id, "enter_name")
+		bot.send_message(message.from_user.id, text["register"]["first"])
+		bot.send_message(message.from_user.id, text["register"]["enter_name"])
 
 
 
 # ------ Регистрация ------ #
 
-@bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_surname")
-@log
-def accept_surname(message):
-	text = language_check()
-	bot.send_message(message.from_user.id, text["register"]["enter_name"])	
-	fsm.set_state(message.from_user.id, "enter_name", surname=message.text)
-
-
 @bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_name")
 @log
 def accept_name(message):
+	text = language_check()
+	bot.send_message(message.from_user.id, text["register"]["enter_surname"])	
+	fsm.set_state(message.from_user.id, "enter_surname", name=message.text)
+
+
+@bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_surname")
+@log
+def accept_surname(message):
+	tmp = fsm.get_state(message.from_user.id)
+	text = language_check()
+	bot.send_message(message.from_user.id, text["register"]["enter_fil_name"])	
+	fsm.set_state(message.from_user.id, "enter_fil_name", name=tmp[1]["name"], surname=message.text)
+
+
+@bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_fil_name")
+@log
+def accept_fil_surname(message):
 	tmp = fsm.get_state(message.from_user.id)
 	text = language_check()
 	bot.send_message(message.from_user.id, text["register"]["enter_side"])	
-	fsm.set_state(message.from_user.id, "enter_side", surname=tmp[1]["surname"], name=message.text)
+	fsm.set_state(message.from_user.id, "enter_side", name=tmp[1]["name"], surname=tmp[1]["surname"], fil_name=message.text)
 
 
 @bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_side")
@@ -256,7 +266,7 @@ def accept_side(message):
 	tmp = fsm.get_state(message.from_user.id)
 	text = language_check()
 	bot.send_message(message.from_user.id, text["register"]["enter_rank"])	
-	fsm.set_state(message.from_user.id, "enter_rank", surname=tmp[1]["surname"], name=tmp[1]["name"], side=message.text)
+	fsm.set_state(message.from_user.id, "enter_rank", name=tmp[1]["name"], surname=tmp[1]["surname"], fil_name=tmp[1]["fil_name"], side=message.text)
 
 
 @bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_rank")
@@ -264,17 +274,9 @@ def accept_side(message):
 def accept_rank(message):
 	tmp = fsm.get_state(message.from_user.id)
 	text = language_check()
-	bot.send_message(message.from_user.id, text["register"]["enter_fil_name"])	
-	fsm.set_state(message.from_user.id, "enter_fil_name", surname=tmp[1]["surname"], name=tmp[1]["name"], side=tmp[1]["side"], rank=message.text)
-
-
-@bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_fil_name")
-@log
-def accept_fil_name(message):
-	tmp = fsm.get_state(message.from_user.id)
-	text = language_check()
 	bot.send_message(message.from_user.id, text["register"]["enter_mail"])	
-	fsm.set_state(message.from_user.id, "enter_mail", surname=tmp[1]["surname"], name=tmp[1]["name"], side=tmp[1]["side"], rank=tmp[1]["rank"], fil_name=message.text)
+	fsm.set_state(message.from_user.id, "enter_mail", name=tmp[1]["name"], surname=tmp[1]["surname"], fil_name=tmp[1]["fil_name"], side=tmp[1]["side"], rank=message.text)
+
 
 
 @bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_mail")
