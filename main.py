@@ -291,7 +291,7 @@ def accept_mail(message):
 
 	db.session.add(models.BotUser(user_id=message.from_user.id, surname=tmp[1]["surname"], name=tmp[1]["name"], side=tmp[1]["side"], rank=tmp[1]["rank"], fil_name=tmp[1]["fil_name"], mail=message.text, coins=10))
 	db.session.commit()
-	bot.send_message(message.from_user.id, text["register"]["first_message"].format(message.from_user.first_name))
+	bot.send_message(message.from_user.id, text["register"]["first_message"].format(tmp[1]["name"]))
 	bot.send_message(message.from_user.id, text["register"]["second_message"].format(tmp[1]["name"], tmp[1]["side"], tmp[1]["fil_name"]))
 	bot.send_message(message.from_user.id, text["register"]["third_message"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
 	fsm.reset_state(message.from_user.id)
