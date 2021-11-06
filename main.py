@@ -406,7 +406,7 @@ def my_id(message):
 
 
 # ------ Ставки ------ #
-@bot.message_handler(commands=['/bid'])
+@bot.message_handler(commands=['bid'])
 def bet(message):
 	active_lot = models.ActiveLot.query.first()
 	text = language_check()
