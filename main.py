@@ -341,15 +341,17 @@ def apanel_accept_send(call):
 
 @bot.message_handler(commands=['start'])
 def start(message):
-	fsm.reset_state(message.from_user.id)
-	text = language_check()
-	if models.BotUser.query.filter_by(user_id=message.from_user.id).first() != None:
-		bot.send_message(message.from_user.id, text["hi_again"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
-	else:
-		fsm.set_state(message.from_user.id, "enter_name")
-		bot.send_message(message.from_user.id, text["register"]["first"])
-		bot.send_message(message.from_user.id, text["register"]["enter_name"])
-
+	try:
+		fsm.reset_state(message.from_user.id)
+		text = language_check()
+		if models.BotUser.query.filter_by(user_id=message.from_user.id).first() != None:
+			bot.send_message(message.from_user.id, text["hi_again"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
+		else:
+			fsm.set_state(message.from_user.id, "enter_name")
+			bot.send_message(message.from_user.id, text["register"]["first"])
+			bot.send_message(message.from_user.id, text["register"]["enter_name"])
+	except Exception as e:
+		print(e)
 
 
 # ------ Регистрация ------ #
