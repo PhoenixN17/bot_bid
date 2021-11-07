@@ -60,7 +60,7 @@ def apanel_accept_delete_question(message):
 		else:
 			db.session.delete(question)
 			db.session.commit()
-		bot.send_message(message.from_user.id, "Админ панель", reply_markup=create_inlineKeyboard(language_check()["apanel"]["buttons"], 2))\
+		bot.send_message(message.from_user.id, "Админ панель", reply_markup=create_inlineKeyboard(language_check()["apanel"]["buttons"], 2))
 	except Exception as e:
 		print(e)
 
