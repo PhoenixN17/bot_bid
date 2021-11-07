@@ -116,6 +116,7 @@ def apanel_add_question(call):
 @tbf.form_event("add_question", action=["submit"])
 def apanel_accept_question(call,form_data):
 	try:
+		text = language_check()
 		if form_data.media:
 			media_type = form_data.media.media_type	
 			file_id = form_data.media.file_id
@@ -127,7 +128,7 @@ def apanel_accept_question(call,form_data):
 		db.session.add(quiz)
 		db.session.commit()
 		bot.send_message(call.from_user.id, text["apanel"]["add_question"]["question_id"].format(quiz.id))
-		bot.send_message(call.from_user.id, language_check()["apanel"]["add_question"]["added"], reply_markup=create_inlineKeyboard(language_check()["apanel"]["buttons"], 2))
+		bot.send_message(call.from_user.id, text["apanel"]["add_question"]["added"], reply_markup=create_inlineKeyboard(text["apanel"]["buttons"], 2))
 	except Exception as e:
 		print(e)
 
