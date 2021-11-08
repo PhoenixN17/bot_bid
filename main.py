@@ -13,11 +13,12 @@ from tool import language_check, log, create_inlineKeyboard, create_markup
 from app import bot, tbf, fsm, db, app
 from flask import request
 # f
+
 #db.session.add(models.Email(mail="jerck@gmail.com"))
 #
 #db.session.commit()
 
-print(models.Auc.query.all())
+#print(models.Auc.query.all())
 
 #bot.remove_webhook()
 
@@ -127,6 +128,8 @@ def apanel_accept_question(call,form_data):
 		quiz = models.Quiz(quiz_type=media_type, quiz_media_id=file_id, question=form_data.question, answer=form_data.answer, false=pickle.dumps(form_data.false.split("#")), cost=int(form_data.cost))
 		db.session.add(quiz)
 		db.session.commit()
+		print(quiz)
+		quiz = models.Quiz.query.filter_by(quiz_type=media_type, quiz_media_id=file_id, question=form_data.question, answer=form_data.answer).first()
 		bot.send_message(call.from_user.id, text["apanel"]["add_question"]["question_id"].format(quiz.id))
 		bot.send_message(call.from_user.id, text["apanel"]["add_question"]["added"], reply_markup=create_inlineKeyboard(text["apanel"]["buttons"], 2))
 	except Exception as e:
@@ -419,30 +422,30 @@ def accept_mail(message):
 	bot.send_message(message.from_user.id, text["register"]["third_message"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
 	fsm.reset_state(message.from_user.id)
 
-# Защита от не зарегистрированых юзеров
-@bot.message_handler(func=lambda message: True and models.BotUser.query.filter_by(user_id=message.from_user.id).first() == None)
-@log
-def unreg_wall(message):
-	return
+
 
 # ------ Викторина ------ #
 # выдача
-@bot.message_handler(func=lambda message: True and (message.text == language_check()["quiz"]["start_quiz"] or message.text == language_check()["quiz"]["next_question"]))
+@bot.message_handler(func=lambda message: True and message.text == language_check()["quiz"]["start_quiz"] or message.text == language_check()["quiz"]["next_question"])
 @log
 def quiz_send(message):
 	try:
-		active_lots = models.ActiveLot.query.all()
+		active_lots = models.Auc.query.filter_by(status="active").all()
 		if len(active_lots) == 0:
 			if message.text == language_check()["quiz"]["start_quiz"]:
-				all_quiz = models.Quiz.query.all()
-				user_complete_quiz = models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()
-				if len(all_quiz) != len(user_complete_quiz):
-					text = language_check()
-					user = models.BotUser.query.filter_by(user_id=message.from_user.id).first()
-					bot.send_message(message.from_user.id, text["quiz"]["first_message"].format(user.name))
-					bot.send_message(message.from_user.id, text["quiz"]["second_message"])
-					bot.send_message(message.from_user.id, text["quiz"]["third_message"], reply_markup=create_markup(text["quiz"]["next_question"]))
+				all_quiz = [i.id for i in models.Quiz.query.all()]
+				user_complete_quiz = [i.quiz_id for i in models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()]
+
+				for i in all_quiz:
+					if i not in user_complete_quiz:
+						text = language_check()
+						user = models.BotUser.query.filter_by(user_id=message.from_user.id).first()
+						bot.send_message(message.from_user.id, text["quiz"]["first_message"].format(user.name))
+						bot.send_message(message.from_user.id, text["quiz"]["second_message"])
+						bot.send_message(message.from_user.id, text["quiz"]["third_message"], reply_markup=create_markup(text["quiz"]["next_question"]))
+						break
 			else:
+				print(3)
 				quiz = []
 				all_quiz = models.Quiz.query.all()
 				user_complete_quiz = models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()
@@ -616,7 +619,6 @@ def accept_coins(call):
 	bot.send_message(call.from_user.id, text["mod"]["success"].format(call.data.split(" ")[1], call.data.split(" ")[2]))
 	user.coins = user.coins + int(call.data.split(" ")[2])
 	db.session.commit()
-
 '''
 bot.remove_webhook()
 if __name__ == '__main__':
