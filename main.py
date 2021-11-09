@@ -197,7 +197,7 @@ def apanel_end_lot_accept(call):
 		active_lots = models.ActiveLot.query.all()
 		if len(active_lots) != 0:
 			for i in models.BotUser.query.all():
-				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["new_lot"].format(lot.cost))
+				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["new_lot"].format(lot[0].cost))
 		else:
 			for i in models.BotUser.query.all():
 				bot.send_message(i.user_id, text["bet"]["end"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
@@ -625,6 +625,7 @@ def accept_coins(call):
 
 
 '''
+
 bot.remove_webhook()
 if __name__ == '__main__':
 	bot.polling(none_stop=True)
@@ -649,7 +650,6 @@ def webhook():
 if __name__ == "__main__":
   app.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000))) 
   print("START")
-
 
 # template #
 '''
