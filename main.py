@@ -559,7 +559,7 @@ def bet(message):
 		
 		user = models.BotUser.query.filter_by(user_id=message.from_user.id).first()
 		if active_lot.bet_date + timedelta(seconds=10) < datetime.now():
-			if active_lot.cost + 10 > user.coins:
+			if active_lot.cost + 10 > user.coins and active_lot.winner_id == message.from_user.id:
 				bot.send_message(message.from_user.id, text["bet"]["not_enough"])
 			
 			else:
