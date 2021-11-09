@@ -12,13 +12,7 @@ from datetime import datetime, timedelta
 from tool import language_check, log, create_inlineKeyboard, create_markup
 from app import bot, tbf, fsm, db, app
 from flask import request
-# f
 
-#db.session.add(models.Email(mail="jerck@gmail.com"))
-#
-#db.session.commit()
-
-#print(models.Auc.query.all())
 
 
 
