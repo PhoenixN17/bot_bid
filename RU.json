@@ -69,7 +69,7 @@
    								"cost":"Цена",
 
    								"added": "Вопрос добавлен",
-   								"question_id":"Ид вопроса"
+   								"question_id":"Ид вопроса {}"
    							   },
 
    				"create_lot": {

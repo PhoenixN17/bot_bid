@@ -20,7 +20,6 @@ from flask import request
 
 #print(models.Auc.query.all())
 
-#bot.remove_webhook()
 
 
 # ------ Админ панель ------ #
@@ -128,9 +127,10 @@ def apanel_accept_question(call,form_data):
 		quiz = models.Quiz(quiz_type=media_type, quiz_media_id=file_id, question=form_data.question, answer=form_data.answer, false=pickle.dumps(form_data.false.split("#")), cost=int(form_data.cost))
 		db.session.add(quiz)
 		db.session.commit()
-		print(quiz)
 		quiz = models.Quiz.query.filter_by(quiz_type=media_type, quiz_media_id=file_id, question=form_data.question, answer=form_data.answer).first()
-		bot.send_message(call.from_user.id, text["apanel"]["add_question"]["question_id"].format(quiz.id))
+		print(quiz)
+		
+		bot.send_message(call.from_user.id, text["apanel"]["add_question"]["question_id"].format(str(quiz.id)))
 		bot.send_message(call.from_user.id, text["apanel"]["add_question"]["added"], reply_markup=create_inlineKeyboard(text["apanel"]["buttons"], 2))
 	except Exception as e:
 		print(e)
@@ -332,6 +332,8 @@ def apanel_accept_send(call):
 				time.sleep(0.03)
 				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["new_lot"].format(lot.cost), reply_markup=create_markup(text["bet"]["bet"]))
 				time.sleep(0.03)
+				bot.send_photo(i.user_id, lot.pic, lot.disc)
+				time.sleep(0.03)
 		db.session.add(models.ActiveLot(lot_id=lot.id, cost=lot.cost))
 		db.session.commit()
 		
@@ -426,9 +428,10 @@ def accept_mail(message):
 
 # ------ Викторина ------ #
 # выдача
-@bot.message_handler(func=lambda message: True and message.text == language_check()["quiz"]["start_quiz"] or message.text == language_check()["quiz"]["next_question"])
+@bot.message_handler(func=lambda message: True and message.text in [language_check()["quiz"]["start_quiz"], language_check()["quiz"]["next_question"]])
 @log
 def quiz_send(message):
+	print(1)
 	try:
 		active_lots = models.Auc.query.filter_by(status="active").all()
 		if len(active_lots) == 0:
@@ -619,10 +622,13 @@ def accept_coins(call):
 	bot.send_message(call.from_user.id, text["mod"]["success"].format(call.data.split(" ")[1], call.data.split(" ")[2]))
 	user.coins = user.coins + int(call.data.split(" ")[2])
 	db.session.commit()
+
+
 '''
 bot.remove_webhook()
 if __name__ == '__main__':
 	bot.polling(none_stop=True)
+
 
 '''
 
@@ -643,7 +649,6 @@ def webhook():
 if __name__ == "__main__":
   app.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000))) 
   print("START")
-
 
 
 # template #
