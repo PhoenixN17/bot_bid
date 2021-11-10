@@ -341,6 +341,7 @@ def start(message):
 		if models.BotUser.query.filter_by(user_id=message.from_user.id).first() != None:
 			bot.send_message(message.from_user.id, text["hi_again"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
 		else:
+			bot.send_sticker(message.from_user.id, "CAACAgIAAxkBAAIFb2GMDYddnS6cDjqGoR5O2TDV4guTAAKbFQACLJxhSPmAdDVYBxbQIgQ")
 			fsm.set_state(message.from_user.id, "enter_name")
 			bot.send_message(message.from_user.id, text["register"]["first"])
 			bot.send_message(message.from_user.id, text["register"]["enter_name"])
@@ -394,6 +395,7 @@ def accept_mail(message):
 	tmp = fsm.get_state(message.from_user.id)
 	text = language_check()
 	if message.text not in [i.mail for i in models.Email.query.all()]:
+		bot.send_sticker(message.from_user.id, "CAACAgIAAxkBAAIFcWGMDcKKAvfcx697mQObB5vhU6KSAAIYEQACTDBhSKedF-uBP0JrIgQ")
 		bot.send_message(message.from_user.id, text["register"]["non_mail"])	
 		bot.send_message(message.from_user.id, text["register"]["non_mail1"])
 		bot.send_message(message.from_user.id, text["register"]["non_mail2"])
@@ -402,6 +404,7 @@ def accept_mail(message):
 
 	db.session.add(models.BotUser(user_id=message.from_user.id, surname=tmp[1]["surname"], name=tmp[1]["name"], rank=tmp[1]["rank"], fil_name=tmp[1]["fil_name"], mail=message.text, coins=10))
 	db.session.commit()
+	bot.send_sticker(message.from_user.id, "CAACAgIAAxkBAAIFc2GMDgAB3zqME8BnshYFgiqXiZqgWwACcREAAkWIYUglPsZ0uJ5pPSIE")
 	bot.send_message(message.from_user.id, text["register"]["first_message"].format(tmp[1]["name"], tmp[1]["fil_name"]))
 	bot.send_message(message.from_user.id, text["register"]["second_message"])
 	bot.send_message(message.from_user.id, text["register"]["third_message"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
@@ -577,20 +580,23 @@ def bet(message):
 
 @bot.message_handler(func=lambda message: True and message.text in ['/start_quiz', "/stop_quiz"])
 def quiz_status(message):
-	users = models.BotUser.query.all()
-	if message.text == "/start_quiz":
-		quiz_status = True
-		for i in users:
-			bot.send_message(i.user_id, language_check()["quiz"]["start"])
-			time.sleep(0.03)
-	elif message.text == "/stop_quiz":
-		quiz_status = False
-		text = language_check()
-		for i in users:
-			bot.send_message(i.user_id, text["quiz"]["end_"].format(i.coins))
-			time.sleep(0.03)
-			bot.send_message(i.user_id, text["quiz"]["end_1"])
-			time.sleep(0.03)
+	print(message)
+	if message.from_user.id in config.admin:
+		users = models.BotUser.query.all()
+		if message.text == "/start_quiz":
+			quiz_status = True
+			for i in users:
+				bot.send_message(i.user_id, language_check()["quiz"]["start"])
+				time.sleep(0.03)
+		elif message.text == "/stop_quiz":
+			quiz_status = False
+			text = language_check()
+			for i in users:
+				bot.send_sticker(i.user_id, "CAACAgIAAxkBAAIFdWGMDiEV6Y9SDC3lRcYbDmD3ZsxUAAJ5EQACbaNZSMtrjsQSTZFfIgQ")
+				bot.send_message(i.user_id, text["quiz"]["end_"].format(i.coins))
+				time.sleep(0.03)
+				bot.send_message(i.user_id, text["quiz"]["end_1"])
+				time.sleep(0.03)
 
 
 
