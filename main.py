@@ -14,7 +14,7 @@ from app import bot, tbf, fsm, db, app
 from flask import request
 
 
-
+quiz_status = True
 
 # ------ Админ панель ------ #
 @bot.message_handler(commands=['apanel'])
@@ -416,61 +416,62 @@ def accept_mail(message):
 def quiz_send(message):
 	print(1)
 	try:
-		active_lots = models.Auc.query.filter_by(status="active").all()
-		if len(active_lots) == 0:
-			if message.text == language_check()["quiz"]["start_quiz"]:
-				all_quiz = [i.id for i in models.Quiz.query.all()]
-				user_complete_quiz = [i.quiz_id for i in models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()]
+		if quiz_status == True:
+			active_lots = models.Auc.query.filter_by(status="active").all()
+			if len(active_lots) == 0:
+				if message.text == language_check()["quiz"]["start_quiz"]:
+					all_quiz = [i.id for i in models.Quiz.query.all()]
+					user_complete_quiz = [i.quiz_id for i in models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()]
 
-				for i in all_quiz:
-					if i not in user_complete_quiz:
-						text = language_check()
-						user = models.BotUser.query.filter_by(user_id=message.from_user.id).first()
-						bot.send_message(message.from_user.id, text["quiz"]["third_message"], reply_markup=create_markup(text["quiz"]["next_question"]))
-						break
-			else:
-				print(3)
-				quiz = []
-				all_quiz = models.Quiz.query.all()
-				user_complete_quiz = models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()
-				# Убираем пройденые викторины и сортируем список
-				complete_quiz = [i.quiz_id for i in user_complete_quiz]
-				for i in all_quiz:
-					if i.id in complete_quiz:
-						continue
-					quiz.append(i)
-
-				if len(quiz) != 0:
-					# -- Выдача случайного вопроса -- #
-					quiz = random.choice(quiz)
-					
-					  # генерация главиатуры для викторины #
-					quiz_buttons = [i for i in pickle.loads(quiz.false)]
-					quiz_buttons.append(quiz.answer)
-					quiz_button = random.shuffle(quiz_buttons)
-					quiz_keyboard = {}
-					for i in range(len(quiz_buttons)):
-						quiz_keyboard[quiz_buttons[i]] = f"answer_quiz {quiz.id} {i}"
-
-					
-					  # Отправка #
-					if quiz.quiz_type == "text":
-						bot.send_message(message.from_user.id, quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
-					elif quiz.quiz_type == "photo":
-						bot.send_photo(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
-					elif quiz.quiz_type == "video":
-						bot.send_video(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
-					elif quiz.quiz_type == "audio":
-						bot.send_audio(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
+					for i in all_quiz:
+						if i not in user_complete_quiz:
+							text = language_check()
+							user = models.BotUser.query.filter_by(user_id=message.from_user.id).first()
+							bot.send_message(message.from_user.id, text["quiz"]["third_message"], reply_markup=create_markup(text["quiz"]["next_question"]))
+							break
 				else:
-					count = 0
-					for i in user_complete_quiz:
-						if i.status == "win":
-							count += int(i.cost)
-					text = language_check()
-					bot.send_message(message.from_user.id, text["quiz"]["end"])
-					bot.send_message(message.from_user.id, text["quiz"]["count"].format(count), reply_markup=create_markup(text["quiz"]["start_quiz"]))
-					return
+					print(3)
+					quiz = []
+					all_quiz = models.Quiz.query.all()
+					user_complete_quiz = models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()
+					# Убираем пройденые викторины и сортируем список
+					complete_quiz = [i.quiz_id for i in user_complete_quiz]
+					for i in all_quiz:
+						if i.id in complete_quiz:
+							continue
+						quiz.append(i)
+
+					if len(quiz) != 0:
+						# -- Выдача случайного вопроса -- #
+						quiz = random.choice(quiz)
+						
+						  # генерация главиатуры для викторины #
+						quiz_buttons = [i for i in pickle.loads(quiz.false)]
+						quiz_buttons.append(quiz.answer)
+						quiz_button = random.shuffle(quiz_buttons)
+						quiz_keyboard = {}
+						for i in range(len(quiz_buttons)):
+							quiz_keyboard[quiz_buttons[i]] = f"answer_quiz {quiz.id} {i}"
+
+						
+						  # Отправка #
+						if quiz.quiz_type == "text":
+							bot.send_message(message.from_user.id, quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
+						elif quiz.quiz_type == "photo":
+							bot.send_photo(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
+						elif quiz.quiz_type == "video":
+							bot.send_video(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
+						elif quiz.quiz_type == "audio":
+							bot.send_audio(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
+					else:
+						count = 0
+						for i in user_complete_quiz:
+							if i.status == "win":
+								count += int(i.cost)
+						text = language_check()
+						bot.send_message(message.from_user.id, text["quiz"]["end"])
+						bot.send_message(message.from_user.id, text["quiz"]["count"].format(count), reply_markup=create_markup(text["quiz"]["start_quiz"]))
+						return
 	except Exception as e:
 		print(e)
 
@@ -574,6 +575,22 @@ def bet(message):
 		print(e)
 
 
+@bot.message_handler(func=lambda message: True and message.text in ['/start_quiz', "/stop_quiz"])
+def quiz_status(message):
+	users = models.BotUser.query.all()
+	if message.text == "/start_quiz":
+		quiz_status = True
+		for i in users:
+			bot.send_message(i.user_id, language_check()["quiz"]["start"])
+			time.sleep(0.03)
+	elif message.text == "/stop_quiz":
+		quiz_status = False
+		text = language_check()
+		for i in users:
+			bot.send_message(i.user_id, text["quiz"]["end_"].format(i.coins))
+			time.sleep(0.03)
+			bot.send_message(i.user_id, text["quiz"]["end_1"])
+			time.sleep(0.03)
 
 
 
@@ -620,14 +637,14 @@ def accept_coins(call):
 	db.session.commit()
 
 
-
+"""
 
 bot.remove_webhook()
 if __name__ == '__main__':
 	bot.polling(none_stop=True)
 
+"""
 
-'''
 
 @app.route('/' + config.TOKEN, methods=['POST'])
 def getMessage():
@@ -646,7 +663,7 @@ def webhook():
 if __name__ == "__main__":
   app.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000))) 
   print("START")
-'''
+
 # template #
 '''
 content_types=['video', 'document', 'audio', 'voice', 'photo', 'text'], 
