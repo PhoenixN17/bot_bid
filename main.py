@@ -13,7 +13,7 @@ from tool import language_check, log, create_inlineKeyboard, create_markup
 from app import bot, tbf, fsm, db, app
 from flask import request
 
-
+print(-1)
 quiz_status = True
 
 # ------ Админ панель ------ #
