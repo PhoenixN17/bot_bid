@@ -194,7 +194,8 @@ def apanel_end_lot_accept(call):
 				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["new_lot"].format(lot[0].cost))
 		else:
 			for i in models.BotUser.query.all():
-				bot.send_message(i.user_id, text["bet"]["end"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
+			#	bot.send_message(i.user_id, text["bet"]["end"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
+				bot.send_message(i.user_id, text["bet"]["end"])
 				time.sleep(0.03)
 	except Exception as e:
 		print(e)
@@ -407,7 +408,8 @@ def accept_mail(message):
 	bot.send_sticker(message.from_user.id, "CAACAgIAAxkBAAIFc2GMDgAB3zqME8BnshYFgiqXiZqgWwACcREAAkWIYUglPsZ0uJ5pPSIE")
 	bot.send_message(message.from_user.id, text["register"]["first_message"].format(tmp[1]["name"], tmp[1]["fil_name"]))
 	bot.send_message(message.from_user.id, text["register"]["second_message"])
-	bot.send_message(message.from_user.id, text["register"]["third_message"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
+	bot.send_message(message.from_user.id, text["register"]["third_message"])
+	#bot.send_message(message.from_user.id, text["register"]["third_message"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
 	fsm.reset_state(message.from_user.id)
 
 
