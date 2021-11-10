@@ -642,6 +642,7 @@ def accept_coins(call):
 	user = models.BotUser.query.filter_by(user_id=int(call.data.split(" ")[1])).first()
 	bot.send_message(call.from_user.id, text["mod"]["success"].format(call.data.split(" ")[1], call.data.split(" ")[2]))
 	user.coins = user.coins + int(call.data.split(" ")[2])
+	bot.send_message(user.user_id, text["functions"]["get"].format(call.data.split(" ")[2]))
 	db.session.commit()
 
 
