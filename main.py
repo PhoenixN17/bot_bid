@@ -163,11 +163,11 @@ def apanel_end_lot_accept(call):
 		Players = models.Players.query.filter_by(lot_id=lot[0][0].id)
 		# Проверка есть ли победитель у лота
 		if lot[0][1].winner_id != None:
-			user = models.BotUser.query.filter_by(user_id=call.from_user.id).first()
+			user = models.BotUser.query.filter_by(user_id=lot[0][1].winner_id).first()
 			user.coins = user.coins - lot[0][1].cost
 		else:
 			pass
-
+		db.session.commit()
 		# выдача победителю и програвшим
 		text = language_check()
 		for i in Players:
