@@ -646,8 +646,8 @@ def accept_coins(call):
 	db.session.commit()
 
 
-"""
 
+"""
 bot.remove_webhook()
 if __name__ == '__main__':
 	bot.polling(none_stop=True)
@@ -672,6 +672,7 @@ def webhook():
 if __name__ == "__main__":
   app.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000))) 
   print("START")
+
 
 # template #
 '''
