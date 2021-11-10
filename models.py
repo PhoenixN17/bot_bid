@@ -37,7 +37,6 @@ class BotUser(db.Model):
 	user_id = db.Column(db.Integer(), unique=True)
 	surname = db.Column(db.String())
 	name = db.Column(db.String())
-	side = db.Column(db.String())
 	rank = db.Column(db.String())
 	fil_name = db.Column(db.String())
 	mail = db.Column(db.String())

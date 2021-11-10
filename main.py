@@ -316,12 +316,6 @@ def apanel_accept_send(call):
 		if len(active_lots) == 0:
 			users = models.BotUser.query.all()
 			for i in users:
-				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["message_one"])
-				time.sleep(0.03)
-				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["message_two"])
-				time.sleep(0.03)
-				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["message_three"])
-				time.sleep(0.03)
 				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["message_four"].format(i.coins))
 				time.sleep(0.03)
 				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["new_lot"].format(lot.cost), reply_markup=create_markup(text["bet"]["bet"]))
@@ -369,26 +363,19 @@ def accept_name(message):
 def accept_surname(message):
 	tmp = fsm.get_state(message.from_user.id)
 	text = language_check()
-	bot.send_message(message.from_user.id, text["register"]["enter_fil_name"])	
+	bot.send_message(message.from_user.id, text["register"]["enter_fil_name"], reply_markup=create_markup(text["register"]["fil_name"], 2))	
 	fsm.set_state(message.from_user.id, "enter_fil_name", name=tmp[1]["name"], surname=message.text)
 
 
 @bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_fil_name")
 @log
 def accept_fil_surname(message):
-	tmp = fsm.get_state(message.from_user.id)
 	text = language_check()
-	bot.send_message(message.from_user.id, text["register"]["enter_side"])	
-	fsm.set_state(message.from_user.id, "enter_side", name=tmp[1]["name"], surname=tmp[1]["surname"], fil_name=message.text)
-
-
-@bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_side")
-@log
-def accept_side(message):
+	if message.text not in text["register"]["fil_name"]:
+		return
 	tmp = fsm.get_state(message.from_user.id)
-	text = language_check()
-	bot.send_message(message.from_user.id, text["register"]["enter_rank"])	
-	fsm.set_state(message.from_user.id, "enter_rank", name=tmp[1]["name"], surname=tmp[1]["surname"], fil_name=tmp[1]["fil_name"], side=message.text)
+	bot.send_message(message.from_user.id, text["register"]["enter_rank"], reply_markup=telebot.types.ReplyKeyboardRemove())	
+	fsm.set_state(message.from_user.id, "enter_rank", name=tmp[1]["name"], surname=tmp[1]["surname"], fil_name=message.text)
 
 
 @bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_rank")
@@ -397,7 +384,7 @@ def accept_rank(message):
 	tmp = fsm.get_state(message.from_user.id)
 	text = language_check()
 	bot.send_message(message.from_user.id, text["register"]["enter_mail"])	
-	fsm.set_state(message.from_user.id, "enter_mail", name=tmp[1]["name"], surname=tmp[1]["surname"], fil_name=tmp[1]["fil_name"], side=tmp[1]["side"], rank=message.text)
+	fsm.set_state(message.from_user.id, "enter_mail", name=tmp[1]["name"], surname=tmp[1]["surname"], fil_name=tmp[1]["fil_name"], rank=message.text)
 
 
 
@@ -408,13 +395,15 @@ def accept_mail(message):
 	text = language_check()
 	if message.text not in [i.mail for i in models.Email.query.all()]:
 		bot.send_message(message.from_user.id, text["register"]["non_mail"])	
+		bot.send_message(message.from_user.id, text["register"]["non_mail1"])
+		bot.send_message(message.from_user.id, text["register"]["non_mail2"])
 		return 
 
 
-	db.session.add(models.BotUser(user_id=message.from_user.id, surname=tmp[1]["surname"], name=tmp[1]["name"], side=tmp[1]["side"], rank=tmp[1]["rank"], fil_name=tmp[1]["fil_name"], mail=message.text, coins=10))
+	db.session.add(models.BotUser(user_id=message.from_user.id, surname=tmp[1]["surname"], name=tmp[1]["name"], rank=tmp[1]["rank"], fil_name=tmp[1]["fil_name"], mail=message.text, coins=10))
 	db.session.commit()
-	bot.send_message(message.from_user.id, text["register"]["first_message"].format(tmp[1]["name"]))
-	bot.send_message(message.from_user.id, text["register"]["second_message"].format(tmp[1]["name"], tmp[1]["side"], tmp[1]["fil_name"]))
+	bot.send_message(message.from_user.id, text["register"]["first_message"].format(tmp[1]["name"], tmp[1]["fil_name"]))
+	bot.send_message(message.from_user.id, text["register"]["second_message"])
 	bot.send_message(message.from_user.id, text["register"]["third_message"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
 	fsm.reset_state(message.from_user.id)
 
@@ -437,8 +426,6 @@ def quiz_send(message):
 					if i not in user_complete_quiz:
 						text = language_check()
 						user = models.BotUser.query.filter_by(user_id=message.from_user.id).first()
-						bot.send_message(message.from_user.id, text["quiz"]["first_message"].format(user.name))
-						bot.send_message(message.from_user.id, text["quiz"]["second_message"])
 						bot.send_message(message.from_user.id, text["quiz"]["third_message"], reply_markup=create_markup(text["quiz"]["next_question"]))
 						break
 			else:
@@ -536,9 +523,24 @@ def my_id(message):
 	bot.send_message(message.from_user.id, language_check()["functions"]["id"].format(message.from_user.id))
 
 
+@bot.message_handler(commands=['support'])
+def support(message):
+	keyboard = telebot.types.InlineKeyboardMarkup()
+	url_button = telebot.types.InlineKeyboardButton(text="Оператор 1", url="https://t.me/moderator_free")
+	url_button1 = telebot.types.InlineKeyboardButton(text="Оператор 2", url="https://t.me/moderator_freedom")
+	keyboard.add(url_button, url_button1)
+	bot.send_message(message.from_user.id, language_check()["functions"]["support"], reply_markup=keyboard)
 
 
+@bot.message_handler(commands=['upload_video'])
+def upload_video(message):
+	bot.send_message(message.from_user.id, language_check()["functions"]["upload"])
+	fsm.set_state(message.from_user.id, "upload_video")
 
+
+@bot.message_handler(content_types=["video"], func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "upload_video")
+def get_video(message):
+	bot.send_message(message.from_user.id, language_check()["functions"]["accepted"])
 
 
 # ------ Ставки ------ #
@@ -618,7 +620,7 @@ def accept_coins(call):
 	db.session.commit()
 
 
-'''
+
 
 bot.remove_webhook()
 if __name__ == '__main__':
@@ -644,7 +646,7 @@ def webhook():
 if __name__ == "__main__":
   app.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000))) 
   print("START")
-
+'''
 # template #
 '''
 content_types=['video', 'document', 'audio', 'voice', 'photo', 'text'], 
