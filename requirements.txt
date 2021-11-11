@@ -6,3 +6,4 @@ SQLAlchemy==1.3.18
 keyboa==2.2.6
 TBForms
 Flask-SQLAlchemy
+Flask-Migrate

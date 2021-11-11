@@ -125,12 +125,14 @@ class Players(db.Model):
 	__tablename__ = "players"
 	id = db.Column(db.Integer(), primary_key=True)
 	lot_id = db.Column(db.Integer())
+	cost = db.Column(db.Integer())
 	user_id = db.Column(db.Integer())
 
 
 
 	def __repr__(self):
 		return auto_repr(self)
+
 
 
 db.create_all()

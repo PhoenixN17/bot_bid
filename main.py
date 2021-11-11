@@ -571,7 +571,7 @@ def bet(message):
 				active_lot.bet_date = datetime.now()
 				bot.send_message(message.from_user.id, text["bet"]["accept"])
 				if models.Players.query.filter_by(user_id=message.from_user.id, lot_id=active_lot.lot_id).first() == None:
-					db.session.add(models.Players(lot_id=active_lot.lot_id, user_id=message.from_user.id))
+					db.session.add(models.Players(lot_id=active_lot.lot_id, user_id=message.from_user.id, cost=active_lot.cost))
 					db.session.commit()
 		else:
 			bot.send_message(message.from_user.id, text["bet"]["delay"])
