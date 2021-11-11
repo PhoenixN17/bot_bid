@@ -340,7 +340,8 @@ def start(message):
 		fsm.reset_state(message.from_user.id)
 		text = language_check()
 		if models.BotUser.query.filter_by(user_id=message.from_user.id).first() != None:
-			bot.send_message(message.from_user.id, text["hi_again"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
+			#bot.send_message(message.from_user.id, text["hi_again"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
+			bot.send_message(message.from_user.id, text["hi_again"])
 		else:
 			bot.send_sticker(message.from_user.id, "CAACAgIAAxkBAAIFb2GMDYddnS6cDjqGoR5O2TDV4guTAAKbFQACLJxhSPmAdDVYBxbQIgQ")
 			fsm.set_state(message.from_user.id, "enter_name")
