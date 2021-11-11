@@ -1,5 +1,5 @@
 import pickle
-from models import State
+import models
 
 class FSM():
 	def __init__(self, db):
@@ -7,16 +7,16 @@ class FSM():
 	
 
 	def set_state(self, user_id, state, **arg):
-		State.query.filter_by(user_id=user_id).delete()
+		models.State.query.filter_by(user_id=user_id).delete()
 		data = pickle.dumps(arg)
 		
-		state = State(user_id=user_id, state=state, arg=data)
+		state = models.State(user_id=user_id, state=state, arg=data)
 		self.db.session.add(state)
 		self.db.session.commit()
 
 
 	def get_state(self, user_id):
-		tmp = State.query.filter_by(user_id=user_id).first()
+		tmp = models.State.query.filter_by(user_id=user_id).first()
 		if tmp:
 			arg = pickle.loads(tmp.arg)
 			return (tmp.state, arg) 
@@ -25,7 +25,7 @@ class FSM():
 
 
 	def reset_state(self, user_id):
-		tmp = State.query.filter_by(user_id=user_id).first()
+		tmp = models.State.query.filter_by(user_id=user_id).first()
 		if tmp:
 			self.db.session.delete(tmp)
 			self.db.session.commit()
