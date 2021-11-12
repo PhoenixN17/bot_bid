@@ -396,13 +396,14 @@ def accept_rank(message):
 def accept_mail(message):
 	tmp = fsm.get_state(message.from_user.id)
 	text = language_check()
+'''
 	if message.text.lower() not in [i.mail.lower() for i in models.Email.query.all()]:
 		bot.send_sticker(message.from_user.id, "CAACAgIAAxkBAAIFcWGMDcKKAvfcx697mQObB5vhU6KSAAIYEQACTDBhSKedF-uBP0JrIgQ")
 		bot.send_message(message.from_user.id, text["register"]["non_mail"])	
 		bot.send_message(message.from_user.id, text["register"]["non_mail1"])
 		bot.send_message(message.from_user.id, text["register"]["non_mail2"])
 		return 
-
+'''
 
 	db.session.add(models.BotUser(user_id=message.from_user.id, surname=tmp[1]["surname"], name=tmp[1]["name"], rank=tmp[1]["rank"], fil_name=tmp[1]["fil_name"], mail=message.text.lower(), coins=10))
 	db.session.commit()
