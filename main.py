@@ -561,20 +561,25 @@ def bet(message):
 			return
 		
 		user = models.BotUser.query.filter_by(user_id=message.from_user.id).first()
-		if active_lot.bet_date + timedelta(seconds=10) < datetime.now():
-			if active_lot.cost + 10 > user.coins and active_lot.winner_id == message.from_user.id:
-				bot.send_message(message.from_user.id, text["bet"]["not_enough"])
+		if active_lot.bet_date + timedelta(seconds=10) < datetime.now() and active_lot.winner_id == message.from_user.id:
+			bot.send_message(message.from_user.id, text["bet"]["delay"])
 			
+		else:
+			print(active_lot.cost, user.coins)
+			if active_lot.cost + 10 > user.coins:
+				bot.send_message(message.from_user.id, text["bet"]["not_enough"])
+				return
 			else:
 				active_lot.winner_id = message.from_user.id
 				active_lot.cost = active_lot.cost + 10
 				active_lot.bet_date = datetime.now()
 				bot.send_message(message.from_user.id, text["bet"]["accept"])
-				if models.Players.query.filter_by(user_id=message.from_user.id, lot_id=active_lot.lot_id).first() == None:
+				player = models.Players.query.filter_by(user_id=message.from_user.id, lot_id=active_lot.lot_id).first()
+				if player == None:
 					db.session.add(models.Players(lot_id=active_lot.lot_id, user_id=message.from_user.id, cost=active_lot.cost))
-					db.session.commit()
-		else:
-			bot.send_message(message.from_user.id, text["bet"]["delay"])
+				else:
+					player.cost = active_lot.cost
+				db.session.commit()
 
 		db.session.commit()
 	except Exception as e:
@@ -645,10 +650,10 @@ def accept_coins(call):
 	user.coins = user.coins + int(call.data.split(" ")[2])
 	bot.send_message(user.user_id, text["functions"]["get"].format(call.data.split(" ")[2]))
 	db.session.commit()
-
-
+	fsm.reset_state(call.from_user.id)
 
 """
+
 bot.remove_webhook()
 if __name__ == '__main__':
 	bot.polling(none_stop=True)
