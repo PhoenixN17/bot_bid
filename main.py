@@ -330,7 +330,126 @@ def apanel_accept_send(call):
 	except Exception as e:
 		print(e)
 
-		
+
+#-- Цепочки --№
+@bot.callback_query_handler(func=lambda call: True and call.data.split(" ")[0] == "view_chain_menu")
+@log
+def apanel_view_chain(call):
+	text = language_check()
+	bot.delete_message(call.from_user.id, call.message.message_id)
+	bot.send_message(call.from_user.id, text["apanel"]["chain"]["menu"], reply_markup=create_inlineKeyboard(text["apanel"]["chain"]["buttons"], 2))
+
+
+# Создание цепочик
+@bot.callback_query_handler(func=lambda call: True and call.data.split(" ")[0] == "create_chain")
+@log
+def apanel_create_chain(call):
+	text = language_check()
+	bot.delete_message(call.from_user.id, call.message.message_id)
+	bot.send_message(call.from_user.id, text["apanel"]["chain"]["send_name"])
+	fsm.set_state(call.from_user.id, "enter_chain_name")
+
+
+@bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_chain_name")
+@log
+def accept_chain_name(message):
+	text = language_check()
+	bot.send_message(message.from_user.id, text["apanel"]["chain"]["send_message"])
+	fsm.set_state(message.from_user.id, "chain_send_message", name=message.text, args=[])
+
+
+
+
+@bot.message_handler(content_types=['video', 'photo', 'text'], func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "chain_send_message")
+@log
+def accept_chain_message(message):
+	text = language_check()
+	tmp = fsm.get_state(message.from_user.id)
+	if message.text == text["apanel"]["chain"]["stop"]:
+		db.session.add(models.Chain(name=tmp[1]["name"], parts=pickle.dumps(tmp[1]["args"])))
+		db.session.commit()
+		bot.send_message(message.from_user.id, text["apanel"]["chain"]["chain_created"], reply_markup=telebot.types.ReplyKeyboardRemove())
+		fsm.reset_state(message.from_user.id)
+		return
+
+	if message.content_type == "photo":
+		tmp[1]["args"].append(["photo", message.photo[0].file_id, message.caption])
+	elif message.content_type == "text":
+		tmp[1]["args"].append(["text", "text", message.text])
+	elif message.content_type == "video":
+		tmp[1]["args"].append(["video", message.video.file_id, message.caption])
+
+	bot.send_message(message.from_user.id, text["apanel"]["chain"]["press_stp"], reply_markup=create_markup(text["apanel"]["chain"]["stop"]))
+
+
+	fsm.set_state(message.from_user.id, "chain_send_message", name=tmp[1]["name"], args=tmp[1]["args"])
+
+
+# Отправка цепочки
+@bot.callback_query_handler(func=lambda call: True and call.data == "send_chain")
+@log
+def apanel_send_chain(call):
+	chains = models.Chain.query.all()
+	bot.delete_message(call.from_user.id, call.message.message_id)
+	text = language_check()
+	if len(chains) == 0:
+		bot.send_message(call.from_user.id, text["apanel"]["chain"]["no_chains"], reply_markup=create_inlineKeyboard(text["apanel"]["chain"]["buttons"], 2))
+		return 
+
+	chains_buttons = {}
+	for i in chains:
+		chains_buttons[i.name] = f"send_chain {i.id}"
+
+	bot.send_message(call.from_user.id, text["apanel"]["chain"]["to_send"], reply_markup=create_inlineKeyboard(chains_buttons, 2))
+
+
+@bot.callback_query_handler(func=lambda call: True and call.data.split(" ")[0] == "send_chain")
+@log
+def apanel_send_chain(call):
+	bot.delete_message(call.from_user.id, call.message.message_id)
+	chain = models.Chain.query.filter_by(id=call.data.split(" ")[1]).first()
+	parts = pickle.loads(chain.parts)
+	for user in models.BotUser.query.all():
+		for i in parts:
+			print(i)
+			if i[0] == "photo":
+				bot.send_photo(user.user_id, i[1], caption=i[2])
+			elif i[0] == "video":
+				bot.send_video(user.user_id, i[1], caption=i[2])
+			elif i[0] == "text":
+				bot.send_message(user.user_id, i[2])
+	bot.send_message(call.from_user.id, language_check()["apanel"]["chain"]["sended"])
+
+
+
+# Удаление цепочки
+@bot.callback_query_handler(func=lambda call: True and call.data == "del_chain")
+@log
+def apanel_del_chain(call):
+	chains = models.Chain.query.all()
+	bot.delete_message(call.from_user.id, call.message.message_id)
+	text = language_check()
+	if len(chains) == 0:
+		bot.send_message(call.from_user.id, text["apanel"]["chain"]["no_chains"], reply_markup=create_inlineKeyboard(text["apanel"]["chain"]["buttons"], 2))
+		return 
+
+	chains_buttons = {}
+	for i in chains:
+		chains_buttons[i.name] = f"del_chain {i.id}"
+
+	bot.send_message(call.from_user.id, text["apanel"]["chain"]["to_del"], reply_markup=create_inlineKeyboard(chains_buttons, 2))
+
+
+@bot.callback_query_handler(func=lambda call: True and call.data.split(" ")[0] == "del_chain")
+@log
+def apanel_del_chain(call):
+	bot.delete_message(call.from_user.id, call.message.message_id)
+	chain = models.Chain.query.filter_by(id=call.data.split(" ")[1]).first()
+	db.session.delete(chain)
+	db.session.commit()
+	bot.send_message(call.from_user.id, language_check()["apanel"]["chain"]["deleted"])
+
+
 
 
 
@@ -549,6 +668,8 @@ def upload_video(message):
 @bot.message_handler(content_types=["video"], func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "upload_video")
 def get_video(message):
 	bot.send_message(message.from_user.id, language_check()["functions"]["accepted"])
+	for i in config.mod:
+		bot.send_video(i, message.video.file_id)
 
 
 # ------ Ставки ------ #
@@ -652,6 +773,8 @@ def accept_coins(call):
 	bot.send_message(user.user_id, text["functions"]["get"].format(call.data.split(" ")[2]))
 	db.session.commit()
 	fsm.reset_state(call.from_user.id)
+
+
 
 """
 bot.remove_webhook()

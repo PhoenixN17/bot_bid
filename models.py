@@ -134,6 +134,18 @@ class Players(db.Model):
 		return auto_repr(self)
 
 
+class Chain(db.Model):
+	"""Модель выполненых вопросов"""
+	__tablename__ = "chains"
+	id = db.Column(db.Integer(), primary_key=True)
+	name = db.Column(db.String())		
+	parts = db.Column(db.Binary())
+
+
+	def __repr__(self):
+		return auto_repr(self)
+
+
 
 db.create_all()
 db.session.commit()
