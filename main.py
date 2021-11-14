@@ -171,16 +171,19 @@ def apanel_end_lot_accept(call):
 		# выдача победителю и програвшим
 		text = language_check()
 		for i in Players:
-			if i.user_id == lot[0][1].winner_id:
-				player = models.BotUser.query.filter_by(user_id=i.user_id).first()
-				bot.send_message(i.user_id, text["bet"]["congratulation"].format(lot[0][0].name, lot[0][1].cost))
-				bot.send_message(i.user_id, text["bet"]["to_get"])
-				bot.send_message(config.group_id, text["logs"]["win"].format(f"{player.surname} {player.name}", lot[0][0].name, lot[0][1].cost))
-			else:
-				bot.send_message(i.user_id, text["bet"]["sorry"])
-			time.sleep(0.04)
+			try:
+				if i.user_id == lot[0][1].winner_id:
+					player = models.BotUser.query.filter_by(user_id=i.user_id).first()
+					bot.send_message(i.user_id, text["bet"]["congratulation"].format(lot[0][0].name, lot[0][1].cost))
+					bot.send_message(i.user_id, text["bet"]["to_get"])
+					bot.send_message(config.group_id, text["logs"]["win"].format(f"{player.surname} {player.name}", lot[0][0].name, lot[0][1].cost))
+				else:
+					bot.send_message(i.user_id, text["bet"]["sorry"])
+				time.sleep(0.04)
 
-			db.session.delete(i)
+				db.session.delete(i)
+			except Exception as e:
+				print(e)
 		
 		lot[0][0].status = "inactive"
 		db.session.delete(lot[0][1])
@@ -196,9 +199,12 @@ def apanel_end_lot_accept(call):
 				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["new_lot"].format(lot[0].cost))
 		else:
 			for i in models.BotUser.query.all():
-			#	bot.send_message(i.user_id, text["bet"]["end"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
-				bot.send_message(i.user_id, text["bet"]["end"])
-				time.sleep(0.03)
+				try:
+				#	bot.send_message(i.user_id, text["bet"]["end"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
+					bot.send_message(i.user_id, text["bet"]["end"])
+					time.sleep(0.03)
+				except Exception as e:
+					print(e)
 	except Exception as e:
 		print(e)
 
@@ -416,14 +422,17 @@ def apanel_send_chain(call):
 	chain = models.Chain.query.filter_by(id=call.data.split(" ")[1]).first()
 	parts = pickle.loads(chain.parts)
 	for user in models.BotUser.query.all():
-		for i in parts:
-			print(i)
-			if i[0] == "photo":
-				bot.send_photo(user.user_id, i[1], caption=i[2])
-			elif i[0] == "video":
-				bot.send_video(user.user_id, i[1], caption=i[2])
-			elif i[0] == "text":
-				bot.send_message(user.user_id, i[2])
+		try:
+			for i in parts:
+				print(i)
+				if i[0] == "photo":
+					bot.send_photo(user.user_id, i[1], caption=i[2])
+				elif i[0] == "video":
+					bot.send_video(user.user_id, i[1], caption=i[2])
+				elif i[0] == "text":
+					bot.send_message(user.user_id, i[2])
+		except Exception as e:
+			print(e)
 	bot.send_message(call.from_user.id, language_check()["apanel"]["chain"]["sended"])
 
 
@@ -621,7 +630,7 @@ def quiz_accept_answer(call):
 			user = models.BotUser.query.filter_by(user_id=call.from_user.id).first()
 			text = language_check()
 			# Получаем ответ
-			for i in call.message.json["reply_markup"]["inline_keyboard"]:
+			for i in call.message.json["reply_markup"]["inline_keyboard"]
 				for x in i:
 					if x["callback_data"] == call.data:
 						answer = x["text"]
@@ -724,17 +733,23 @@ def quiz_status(message):
 		if message.text == "/start_quiz":
 			quiz_status = True
 			for i in users:
-				bot.send_message(i.user_id, language_check()["quiz"]["start"])
-				time.sleep(0.03)
+				try:
+					bot.send_message(i.user_id, language_check()["quiz"]["start"])
+					time.sleep(0.03)
+				except Exception as e:
+					print(e)
 		elif message.text == "/stop_quiz":
 			quiz_status = False
 			text = language_check()
 			for i in users:
-				bot.send_sticker(i.user_id, "CAACAgIAAxkBAAIFdWGMDiEV6Y9SDC3lRcYbDmD3ZsxUAAJ5EQACbaNZSMtrjsQSTZFfIgQ")
-				bot.send_message(i.user_id, text["quiz"]["end_"].format(i.coins))
-				time.sleep(0.03)
-				bot.send_message(i.user_id, text["quiz"]["end_1"])
-				time.sleep(0.03)
+				try:
+					bot.send_sticker(i.user_id, "CAACAgIAAxkBAAIFdWGMDiEV6Y9SDC3lRcYbDmD3ZsxUAAJ5EQACbaNZSMtrjsQSTZFfIgQ")
+					bot.send_message(i.user_id, text["quiz"]["end_"].format(i.coins), reply_markup=telebot.types.ReplyKeyboardRemove())
+					time.sleep(0.03)
+					bot.send_message(i.user_id, text["quiz"]["end_1"])
+					time.sleep(0.03)
+				except Exception as e:
+					print(e)
 
 
 
