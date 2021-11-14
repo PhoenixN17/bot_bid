@@ -764,7 +764,7 @@ def off_coin(message):
 	if message.from_user.id in config.mod:
 		list_of_best = ""
 		for i in models.BotUser.query.order_by(models.BotUser.coins.desc()).all()[:13]:
-			list_of_best += f"{i.name} {i.surname} {i.coins}\n"
+			list_of_best += f"{i.id}. {i.name} {i.surname} - {i.coins} Freedom-Coin\n"
 		bot.send_message(config.balance_group_id, list_of_best)
 
 
