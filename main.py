@@ -630,7 +630,7 @@ def quiz_accept_answer(call):
 			user = models.BotUser.query.filter_by(user_id=call.from_user.id).first()
 			text = language_check()
 			# Получаем ответ
-			for i in call.message.json["reply_markup"]["inline_keyboard"]
+			for i in call.message.json["reply_markup"]["inline_keyboard"]:
 				for x in i:
 					if x["callback_data"] == call.data:
 						answer = x["text"]
