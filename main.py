@@ -20,6 +20,7 @@ quiz_status = True
 # ------ Админ панель ------ #
 @bot.message_handler(commands=['apanel'])
 def apanel(message):
+	fsm.reset_state(message.from_user.id)
 	try:
 		if message.from_user.id in config.admin:
 			bot.send_message(message.from_user.id, "Админ панель", reply_markup=create_inlineKeyboard(language_check()["apanel"]["buttons"], 2))
@@ -757,10 +758,22 @@ def quiz_statuss(message):
 
 
 # ------ Модератор ------ #
-@bot.message_handler(commands=['off_coin'])
+@bot.message_handler(commands=['top'])
+@log
 def off_coin(message):
-	fsm.set_state(message.from_user.id, "enter_coins")
-	bot.send_message(message.from_user.id, language_check()["mod"]["enter_coins"])
+	if message.from_user.id in config.mod:
+		list_of_best = ""
+		for i in models.BotUser.query.order_by(models.BotUser.coins.desc()).all()[:13]:
+			list_of_best += f"{i.name} {i.surname} {i.coins}\n"
+		bot.send_message(config.balance_group_id, list_of_best)
+
+
+@bot.message_handler(commands=['off_coin'])
+@log
+def off_coin(message):
+	if message.from_user.id in config.mod:
+		fsm.set_state(message.from_user.id, "enter_coins")
+		bot.send_message(message.from_user.id, language_check()["mod"]["enter_coins"])
 
 
 @bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_coins")
@@ -802,9 +815,8 @@ def accept_coins(call):
 	db.session.commit()
 	fsm.reset_state(call.from_user.id)
 
-
-
 """
+
 
 bot.remove_webhook()
 if __name__ == '__main__':
@@ -830,6 +842,7 @@ def webhook():
 if __name__ == "__main__":
   app.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000))) 
   print("START")
+
 
 
 # template #
