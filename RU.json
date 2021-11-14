@@ -11,7 +11,7 @@
 
 
   "register": {
-    "fil_name": [ "Freedom Finance", "Freedom Finance Life", "Freedom Finance Insurance", "Freedom Finance Bank", "Freedom Mobile World", "PayBox.money" ],
+    "fil_name": ["Freedom Finance", "Freedom Finance Life", "Freedom Finance Insurance", "Freedom Finance Bank", "Freedom Mobile World", "PayBox.money", "Freedom Finance Credit"],
 
     "first": "Рад, что ты тут! Меня зовут Mister Freedom, я твой digital-ведущий в предстоящей игре. Ах, какой она будет, ох какой! Прямо сейчас пройди простую регистрацию и будь готов к старту!",
     "enter_surname": "А фамилия?",

@@ -776,7 +776,7 @@ def accept_coins(call):
 
 
 
-"""
+
 bot.remove_webhook()
 if __name__ == '__main__':
 	bot.polling(none_stop=True)
@@ -803,7 +803,7 @@ if __name__ == "__main__":
   print("START")
 
 
-
+"""
 # template #
 '''
 content_types=['video', 'document', 'audio', 'voice', 'photo', 'text'], 
