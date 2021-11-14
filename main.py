@@ -172,8 +172,10 @@ def apanel_end_lot_accept(call):
 		text = language_check()
 		for i in Players:
 			if i.user_id == lot[0][1].winner_id:
+				player = models.BotUser.query.filter_by(user_id=i.user_id).first()
 				bot.send_message(i.user_id, text["bet"]["congratulation"].format(lot[0][0].name, lot[0][1].cost))
 				bot.send_message(i.user_id, text["bet"]["to_get"])
+				bot.send_message(config.group_id, text["logs"]["win"].format(f"{player.surname} {player.name}", lot[0][0].name, lot[0][1].cost))
 			else:
 				bot.send_message(i.user_id, text["bet"]["sorry"])
 			time.sleep(0.04)
@@ -317,12 +319,16 @@ def apanel_accept_send(call):
 		if len(active_lots) == 0:
 			users = models.BotUser.query.all()
 			for i in users:
-				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["message_four"].format(i.coins))
-				time.sleep(0.03)
-				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["new_lot"].format(lot.cost), reply_markup=create_markup(text["bet"]["bet"]))
-				time.sleep(0.03)
-				bot.send_photo(i.user_id, lot.pic, lot.disc)
-				time.sleep(0.03)
+				try:
+					bot.send_message(i.user_id, text["apanel"]["chose_lot"]["message_four"].format(i.coins))
+					time.sleep(0.03)
+					bot.send_message(i.user_id, text["apanel"]["chose_lot"]["new_lot"].format(lot.cost), reply_markup=create_markup(text["bet"]["bet"]))
+					time.sleep(0.03)
+					bot.send_photo(i.user_id, lot.pic, lot.disc)
+					time.sleep(0.03)
+				except Exception as e:
+					print(e, i)
+					continue
 		db.session.add(models.ActiveLot(lot_id=lot.id, cost=lot.cost))
 		db.session.commit()
 		
@@ -625,6 +631,7 @@ def quiz_accept_answer(call):
 			if answer == quiz.answer:
 				bot.send_message(call.from_user.id, random.choice(text["quiz"]["correct_answers"]).format(quiz.cost), reply_markup=create_markup(text["quiz"]["next_question"]))
 				db.session.add(models.CompleteQuiz(quiz_id=quiz.id, user_id=call.from_user.id, status="win", cost=quiz.cost))
+				bot.send_message(config.group_id, text["logs"]["answer"].format(f"{user.surname} {user.name}", quiz.id, quiz.cost))
 				user.coins = user.coins + quiz.cost
 			else:
 				bot.send_message(call.from_user.id, text["quiz"]["incorrect_answer"], reply_markup=create_markup(text["quiz"]["next_question"]))
@@ -683,7 +690,7 @@ def bet(message):
 			return
 		
 		user = models.BotUser.query.filter_by(user_id=message.from_user.id).first()
-		if active_lot.bet_date + timedelta(seconds=10) < datetime.now() and active_lot.winner_id == message.from_user.id:
+		if active_lot.bet_date + timedelta(seconds=10) > datetime.now() and active_lot.winner_id == message.from_user.id:
 			bot.send_message(message.from_user.id, text["bet"]["delay"])
 			
 		else:
@@ -696,6 +703,7 @@ def bet(message):
 				active_lot.cost = active_lot.cost + 10
 				active_lot.bet_date = datetime.now()
 				bot.send_message(message.from_user.id, text["bet"]["accept"])
+				bot.send_message(config.group_id, text["logs"]["auc"].format(f"{user.surname} {user.name}", active_lot.cost, active_lot.lot_id))
 				player = models.Players.query.filter_by(user_id=message.from_user.id, lot_id=active_lot.lot_id).first()
 				if player == None:
 					db.session.add(models.Players(lot_id=active_lot.lot_id, user_id=message.from_user.id, cost=active_lot.cost))
@@ -768,11 +776,14 @@ def accept_coins(call):
 	bot.delete_message(call.from_user.id, call.message.message_id)
 	text = language_check()
 	user = models.BotUser.query.filter_by(user_id=int(call.data.split(" ")[1])).first()
+	mod = models.BotUser.query.filter_by(user_id=call.from_user.id).first()
 	bot.send_message(call.from_user.id, text["mod"]["success"].format(call.data.split(" ")[1], call.data.split(" ")[2]))
 	user.coins = user.coins + int(call.data.split(" ")[2])
 	bot.send_message(user.user_id, text["functions"]["get"].format(call.data.split(" ")[2]))
+	bot.send_message(config.group_id, text["logs"]["offline"].format(f"{mod.surname} {mod.name}", f"{user.surname} {user.name}", call.data.split(" ")[2]))
 	db.session.commit()
 	fsm.reset_state(call.from_user.id)
+
 
 
 """
@@ -801,7 +812,6 @@ def webhook():
 if __name__ == "__main__":
   app.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000))) 
   print("START")
-
 
 
 # template #
