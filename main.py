@@ -775,7 +775,7 @@ def accept_coins(call):
 	fsm.reset_state(call.from_user.id)
 
 
-
+"""
 
 bot.remove_webhook()
 if __name__ == '__main__':
@@ -803,7 +803,7 @@ if __name__ == "__main__":
   print("START")
 
 
-"""
+
 # template #
 '''
 content_types=['video', 'document', 'audio', 'voice', 'photo', 'text'], 
