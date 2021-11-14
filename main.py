@@ -557,9 +557,13 @@ def accept_mail(message):
 def quiz_send(message):
 	print(1)
 	try:
+		print(2)
 		if quiz_status == True:
+			print(2)
 			active_lots = models.Auc.query.filter_by(status="active").all()
+			print(active_lots)
 			if len(active_lots) == 0:
+				print(2.1)
 				if message.text == language_check()["quiz"]["start_quiz"]:
 					all_quiz = [i.id for i in models.Quiz.query.all()]
 					user_complete_quiz = [i.quiz_id for i in models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()]
@@ -734,7 +738,7 @@ def quiz_status(message):
 			quiz_status = True
 			for i in users:
 				try:
-					bot.send_message(i.user_id, language_check()["quiz"]["start"])
+					bot.send_message(i.user_id, language_check()["quiz"]["start"], reply_markup=create_markup(language_check()["quiz"]["start_quiz"]))
 					time.sleep(0.03)
 				except Exception as e:
 					print(e)
