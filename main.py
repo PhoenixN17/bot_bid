@@ -678,9 +678,14 @@ def quiz_send(message):
 					for i in user_complete_quiz:
 						if i.status == "win":
 							count += int(i.cost)
+
 					text = language_check()
 					bot.send_message(message.from_user.id, text["quiz"]["end"])
 					bot.send_message(message.from_user.id, text["quiz"]["count"].format(count), reply_markup=create_markup(text["quiz"]["start_quiz"]))
+					user = models.BotUser.query.filter_by(user_id=message.from_user.id)
+					if user.coins < count + 10:
+						user.coins = count + 10
+						db.session.commit()
 					return
 
 
@@ -838,8 +843,8 @@ def top_lader(message):
 		bot.send_message(config.balance_group_id, list_of_best)
 
 
-
 """
+
 bot.remove_webhook()
 if __name__ == '__main__':
 	bot.polling(none_stop=True)
