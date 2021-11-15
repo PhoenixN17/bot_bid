@@ -18,19 +18,20 @@ from flask import request
 global quiz_status
 quiz_status = True
 
-'''
-users = models.BotUser.query.all()
-for i in users:
-	count = 0
-	for x in models.CompleteQuiz.query.filter_by(user_id=i.user_id).all():
-		if x.status == "win":
-			count += int(x.cost)
 
-	if i.coins < count + 10:
-		i.coins = count + 10
+#users = models.BotUser.query.all()
+#for i in users:
+#	print(i)
+#	count = 0
+#	for x in models.CompleteQuiz.query.filter_by(user_id=i.user_id).all():
+#		if x.status == "win":
+#			count += int(x.cost)
 
-db.session.commit()
-'''
+#	if i.coins < count + 10:
+#		i.coins = count + 10
+
+#db.session.commit()
+
 
 
 
@@ -64,7 +65,7 @@ def quiz_send(message):
 						continue
 					quiz.append(i)
 
-				if len(quiz) != 0:
+				if len(quiz) > 0:
 					# -- Выдача случайного вопроса -- #
 					quiz = random.choice(quiz)
 						
@@ -310,20 +311,11 @@ def accept_mail(message):
 	tmp = fsm.get_state(message.from_user.id)
 	text = language_check()
 
-#	if message.text.lower() not in [i.mail.lower() for i in models.Email.query.all()]:
-#		bot.send_sticker(message.from_user.id, "CAACAgIAAxkBAAIFcWGMDcKKAvfcx697mQObB5vhU6KSAAIYEQACTDBhSKedF-uBP0JrIgQ")
-#		bot.send_message(message.from_user.id, text["register"]["non_mail"])	
-#		bot.send_message(message.from_user.id, text["register"]["non_mail1"])
-#		bot.send_message(message.from_user.id, text["register"]["non_mail2"])
-#		return 
-
-
 	db.session.add(models.BotUser(user_id=message.from_user.id, surname=tmp[1]["surname"], name=tmp[1]["name"], rank=tmp[1]["rank"], fil_name=tmp[1]["fil_name"], mail=message.text.lower(), coins=10))
 	db.session.commit()
 	bot.send_sticker(message.from_user.id, "CAACAgIAAxkBAAIFc2GMDgAB3zqME8BnshYFgiqXiZqgWwACcREAAkWIYUglPsZ0uJ5pPSIE")
 	bot.send_message(message.from_user.id, text["register"]["first_message"].format(tmp[1]["name"], tmp[1]["fil_name"]))
 	bot.send_message(message.from_user.id, text["register"]["second_message"])
-	#bot.send_message(message.from_user.id, text["register"]["third_message"])
 	bot.send_message(message.from_user.id, text["register"]["third_message"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
 	fsm.reset_state(message.from_user.id)
 
