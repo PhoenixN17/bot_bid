@@ -712,9 +712,11 @@ def quiz_accept_answer(call):
 				user.coins = user.coins + quiz.cost
 				db.session.commit()
 				bot.send_message(call.from_user.id, random.choice(text["quiz"]["correct_answers"]).format(quiz.cost), reply_markup=create_markup(text["quiz"]["next_question"]))
+				time.sleep(0.03)
 				db.session.add(models.CompleteQuiz(quiz_id=quiz.id, user_id=call.from_user.id, status="win", cost=quiz.cost))
-				if random.randint(1, 5) == 5:
+				if random.randint(1, 10) == 5:
 					bot.send_message(config.quiz_group_id, text["logs"]["answer"].format(f"{user.surname} {user.name}", quiz.id, quiz.cost))
+					time.sleep(0.03)
 			else:
 				bot.send_message(call.from_user.id, text["quiz"]["incorrect_answer"], reply_markup=create_markup(text["quiz"]["next_question"]))
 				db.session.add(models.CompleteQuiz(quiz_id=quiz.id, user_id=call.from_user.id, status="lose", cost=quiz.cost))
