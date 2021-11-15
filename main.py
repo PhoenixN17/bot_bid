@@ -18,6 +18,73 @@ from flask import request
 global quiz_status
 quiz_status = True
 
+
+
+
+
+
+
+
+
+@bot.message_handler(commands=['off_coin'])
+@log
+def off_coin(message):
+	if message.from_user.id in config.mod:
+		fsm.set_state(message.from_user.id, "enter_coins")
+		bot.send_message(message.from_user.id, language_check()["mod"]["enter_coins"])
+
+
+@bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_coins")
+@log
+def accept_coins(message):
+	text = language_check()
+	tmp = fsm.get_state(message.from_user.id)
+	bot.send_message(message.from_user.id, text["mod"]["enter_id"])	
+	fsm.set_state(message.from_user.id, "enter_id", coins=message.text)
+
+
+@bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_id")
+@log
+def accept_id(message):
+	try:
+		int(message.text)
+	except:
+		return
+	text = language_check()
+	tmp = fsm.get_state(message.from_user.id)
+	user = models.BotUser.query.filter_by(user_id=message.text).first()
+	if user == None:
+		bot.send_message(message.from_user.id, text["mod"]["no_user"])
+	else:
+		bot.send_message(message.from_user.id, text["mod"]["info"].format(message.text, user.name, user.surname), reply_markup=create_inlineKeyboard({"Зачислить":f"give_coins {message.text} {tmp[1]['coins']}"}))
+
+
+@bot.callback_query_handler(func=lambda call: True and call.data.split(" ")[0] == "give_coins")
+@log
+def accept_coins(call):
+	bot.delete_message(call.from_user.id, call.message.message_id)
+	text = language_check()
+	user = models.BotUser.query.filter_by(user_id=int(call.data.split(" ")[1])).first()
+	mod = models.BotUser.query.filter_by(user_id=call.from_user.id).first()
+	bot.send_message(call.from_user.id, text["mod"]["success"].format(call.data.split(" ")[1], call.data.split(" ")[2]))
+	user.coins = user.coins + int(call.data.split(" ")[2])
+	bot.send_message(user.user_id, text["functions"]["get"].format(call.data.split(" ")[2]))
+	db.session.commit()
+	fsm.reset_state(call.from_user.id)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ------ Админ панель ------ #
 @bot.message_handler(commands=['apanel'])
 def apanel(message):
@@ -763,7 +830,7 @@ def quiz_statuss(message):
 # ------ Модератор ------ #
 @bot.message_handler(commands=['top'])
 @log
-def off_coin(message):
+def top_lader(message):
 	if message.from_user.id in config.mod:
 		list_of_best = ""
 		count = 1
@@ -772,52 +839,6 @@ def off_coin(message):
 			count += 1
 		bot.send_message(config.balance_group_id, list_of_best)
 
-
-@bot.message_handler(commands=['off_coin'])
-@log
-def off_coin(message):
-	if message.from_user.id in config.mod:
-		fsm.set_state(message.from_user.id, "enter_coins")
-		bot.send_message(message.from_user.id, language_check()["mod"]["enter_coins"])
-
-
-@bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_coins")
-@log
-def accept_coins(message):
-	text = language_check()
-	tmp = fsm.get_state(message.from_user.id)
-	bot.send_message(message.from_user.id, text["mod"]["enter_id"])	
-	fsm.set_state(message.from_user.id, "enter_id", coins=message.text)
-
-
-@bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_id")
-@log
-def accept_id(message):
-	try:
-		int(message.text)
-	except:
-		return
-	text = language_check()
-	tmp = fsm.get_state(message.from_user.id)
-	user = models.BotUser.query.filter_by(user_id=message.text).first()
-	if user == None:
-		bot.send_message(message.from_user.id, text["mod"]["no_user"])
-	else:
-		bot.send_message(message.from_user.id, text["mod"]["info"].format(message.text, user.name, user.surname), reply_markup=create_inlineKeyboard({"Зачислить":f"give_coins {message.text} {tmp[1]['coins']}"}))
-
-
-@bot.callback_query_handler(func=lambda call: True and call.data.split(" ")[0] == "give_coins")
-@log
-def accept_coins(call):
-	bot.delete_message(call.from_user.id, call.message.message_id)
-	text = language_check()
-	user = models.BotUser.query.filter_by(user_id=int(call.data.split(" ")[1])).first()
-	mod = models.BotUser.query.filter_by(user_id=call.from_user.id).first()
-	bot.send_message(call.from_user.id, text["mod"]["success"].format(call.data.split(" ")[1], call.data.split(" ")[2]))
-	user.coins = user.coins + int(call.data.split(" ")[2])
-	bot.send_message(user.user_id, text["functions"]["get"].format(call.data.split(" ")[2]))
-	db.session.commit()
-	fsm.reset_state(call.from_user.id)
 
 
 """
