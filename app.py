@@ -9,7 +9,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = config.db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
-bot = telebot.TeleBot(config.TOKEN)
+bot = telebot.TeleBot(config.TOKEN, skip_pending=True)
 tbf = TelebotForms(bot)
 db = SQLAlchemy(app)
 fsm = FSM(db)

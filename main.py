@@ -16,28 +16,9 @@ from flask import request
 
 
 global quiz_status
-quiz_status = True
+quiz_status = False
 
-db.session.rollback()
 
-#users = models.BotUser.query.all()
-#sfor i in users:
-#	if i.coins == 10:
-#		i.coins = 110
-
-#db.session.commit()
-
-#for i in users:
-#	print(i)
-#	count = 0
-#	for x in models.CompleteQuiz.query.filter_by(user_id=i.user_id).all():
-#		if x.status == "win":
-#			count += int(x.cost)
-#
-#	if i.coins < count + 10:
-#		i.coins = count + 10
-#
-#	db.session.commit()
 
 
 
@@ -630,15 +611,15 @@ def apanel_send_lot(call):
 @bot.callback_query_handler(func=lambda call: True and call.data.split(" ")[0] == "chose_lot")
 @log
 def apanel_accept_send(call):
-#	bot.delete_message(call.from_user.id, call.message.message_id)
+	bot.delete_message(call.from_user.id, call.message.message_id)
 	text = language_check()
 	lot = models.Auc.query.filter_by(id=call.data.split(" ")[1]).first()
 	lot.status = "active"
+	print(lot.cost)
 	db.session.add(models.ActiveLot(lot_id=lot.id, cost=lot.cost))
 	db.session.commit()
 		
 	bot.send_message(call.from_user.id, text["apanel"]["chose_lot"]["sended_lot"], reply_markup=create_inlineKeyboard(text["apanel"]["buttons"], 2))
-
 
 
 #-- Цепочки --№
@@ -648,7 +629,7 @@ def apanel_view_chain(call):
 	text = language_check()
 	bot.delete_message(call.from_user.id, call.message.message_id)
 	bot.send_message(call.from_user.id, text["apanel"]["chain"]["menu"], reply_markup=create_inlineKeyboard(text["apanel"]["chain"]["buttons"], 2))
-
+'''
 
 # Создание цепочик
 @bot.callback_query_handler(func=lambda call: True and call.data.split(" ")[0] == "create_chain")
@@ -693,7 +674,7 @@ def accept_chain_message(message):
 
 
 	fsm.set_state(message.from_user.id, "chain_send_message", name=tmp[1]["name"], args=tmp[1]["args"])
-
+'''
 
 # Отправка цепочки
 @bot.callback_query_handler(func=lambda call: True and call.data == "send_chain")
@@ -724,17 +705,17 @@ def apanel_send_chain(call):
 			for i in parts:
 				print(i)
 				if i[0] == "photo":
-					bot.send_photo(user.user_id, i[1], caption=i[2])
+					bot1.send_photo(user.user_id, i[1], caption=i[2])
 				elif i[0] == "video":
-					bot.send_video(user.user_id, i[1], caption=i[2])
+					bot1.send_video(user.user_id, i[1], caption=i[2])
 				elif i[0] == "text":
-					bot.send_message(user.user_id, i[2])
+					bot1.send_message(user.user_id, i[2])
 		except Exception as e:
 			print(e)
 	bot.send_message(call.from_user.id, language_check()["apanel"]["chain"]["sended"])
 
 
-
+'''
 # Удаление цепочки
 @bot.callback_query_handler(func=lambda call: True and call.data == "del_chain")
 @log
@@ -764,7 +745,7 @@ def apanel_del_chain(call):
 
 
 
-
+'''
 
 
 
@@ -810,20 +791,31 @@ def accept_coins(call):
 	mod = models.BotUser.query.filter_by(user_id=call.from_user.id).first()
 	bot.send_message(call.from_user.id, text["mod"]["success"].format(call.data.split(" ")[1], call.data.split(" ")[2]))
 	user.coins = user.coins + int(call.data.split(" ")[2])
-	bot.send_message(user.user_id, text["functions"]["get"].format(call.data.split(" ")[2]))
+	bot1.send_message(user.user_id, text["functions"]["get"].format(call.data.split(" ")[2]))
 	db.session.commit()
 	fsm.reset_state(call.from_user.id)
 
 
 		
-		
-		
-
-		
-		
-
-
 """
+		
+
+		
+		
+
+
+@bot.message_handler(func=lambda message: True)
+@log
+def message_handler(message):
+	pass
+@bot.callback_query_handler(func=lambda call: True)
+@log
+def callback_handler(call):
+	pass
+"""
+
+
+
 bot.remove_webhook()
 if __name__ == '__main__':
 	bot.polling(none_stop=True)
