@@ -494,6 +494,7 @@ def apanel_end_lot_accept(call):
 		active_lot = models.ActiveLot.query.first()
 		if active_lot != None:
 			pass
+		"""
 		else:
 			for i in models.BotUser.query.all():
 				try:
@@ -501,6 +502,7 @@ def apanel_end_lot_accept(call):
 					time.sleep(0.03)
 				except Exception as e:
 					print(e)
+		"""
 	except Exception as e:
 		print(e)
 
