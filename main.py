@@ -638,8 +638,8 @@ def quiz_send(message):
 						text = language_check()
 						user = models.BotUser.query.filter_by(user_id=message.from_user.id).first()
 						bot.send_message(message.from_user.id, text["quiz"]["third_message"], reply_markup=create_markup(text["quiz"]["next_question"]))
-						break
-				print("finish", message.from_user.id)
+						return
+				bot.send_message(message.from_user.id, language_check()["quiz"]["finish"])
 			else:
 				quiz = []
 				all_quiz = models.Quiz.query.all()
