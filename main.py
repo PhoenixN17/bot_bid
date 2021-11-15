@@ -15,7 +15,6 @@ from flask import request
 
 
 
-
 global quiz_status
 quiz_status = True
 
@@ -648,6 +647,7 @@ def quiz_accept_answer(call):
 				if random.randint(1, 5) == 5:
 					bot.send_message(config.quiz_group_id, text["logs"]["answer"].format(f"{user.surname} {user.name}", quiz.id, quiz.cost))
 				user.coins = user.coins + quiz.cost
+				db.session.commit()
 			else:
 				bot.send_message(call.from_user.id, text["quiz"]["incorrect_answer"], reply_markup=create_markup(text["quiz"]["next_question"]))
 				db.session.add(models.CompleteQuiz(quiz_id=quiz.id, user_id=call.from_user.id, status="lose", cost=quiz.cost))
