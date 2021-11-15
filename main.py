@@ -18,6 +18,19 @@ from flask import request
 global quiz_status
 quiz_status = True
 
+'''
+users = models.BotUser.query.all()
+for i in users:
+	count = 0
+	for x in models.CompleteQuiz.query.filter_by(user_id=i.user_id).all():
+		if x.status == "win":
+			count += int(x.cost)
+
+	if i.coins < count + 10:
+		i.coins = count + 10
+
+db.session.commit()
+'''
 
 
 
@@ -317,7 +330,7 @@ def accept_mail(message):
 
 
 	
-		
+@bot.message_handler(commands=['top'])		
 def top_lader(message):
 	if message.from_user.id in config.mod:
 		list_of_best = ""
@@ -331,7 +344,7 @@ def top_lader(message):
 		
 		
 		
-		
+
 		
 		
 		
