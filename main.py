@@ -18,9 +18,9 @@ from flask import request
 global quiz_status
 quiz_status = True
 
+db.session.rollback()
 
-
-users = models.BotUser.query.all()
+#users = models.BotUser.query.all()
 #sfor i in users:
 #	if i.coins == 10:
 #		i.coins = 110
@@ -499,23 +499,6 @@ def apanel_end_lot_accept(call):
 		db.session.commit()
 		# выдача победителю и програвшим
 		text = language_check()
-		for i in Players:
-			try:
-				if i.user_id == lot[0][1].winner_id:
-					player = models.BotUser.query.filter_by(user_id=i.user_id).first()
-					bot.send_message(i.user_id, text["bet"]["congratulation"].format(lot[0][0].name, lot[0][1].cost))
-					time.sleep(0.03)
-					bot.send_message(i.user_id, text["bet"]["to_get"])
-					time.sleep(0.03)
-					bot.send_message(config.auc_group_id, text["logs"]["win"].format(f"{player.surname} {player.name}", lot[0][0].name, lot[0][1].cost))
-					
-				else:
-					bot.send_message(i.user_id, text["bet"]["sorry"])
-					time.sleep(0.04)
-
-				db.session.delete(i)
-			except Exception as e:
-				print(e)
 		
 		lot[0][0].status = "inactive"
 		db.session.delete(lot[0][1])
@@ -523,20 +506,12 @@ def apanel_end_lot_accept(call):
 
 		db.session.commit()
 		bot.send_message(call.from_user.id, text["apanel"]["end_lot"]["successfully"], reply_markup=create_inlineKeyboard(text["apanel"]["buttons"], 2))
+		bot.send_message(config.auc_group_id, text["logs"]["win"].format(f"{player.surname} {player.name}", lot[0][0].name, lot[0][1].cost))
 
 		# Сообщение о новом лоте
 		active_lot = models.ActiveLot.query.first()
-		print(active_lot)
 		if active_lot != None:
-			lot = models.Auc.query.filter_by(id=active_lot.lot_id).first()
-			for i in models.BotUser.query.all():
-				try:
-					bot.send_message(i.user_id, text["apanel"]["chose_lot"]["new_lot"].format(lot.cost), reply_markup=create_markup(text["bet"]["bet"]))
-					time.sleep(0.03)
-					bot.send_photo(i.user_id, lot.pic, lot.disc)
-					time.sleep(0.03)
-				except Exception as e:
-					print(e)
+			pass
 		else:
 			for i in models.BotUser.query.all():
 				try:
@@ -659,20 +634,6 @@ def apanel_accept_send(call):
 	text = language_check()
 	lot = models.Auc.query.filter_by(id=call.data.split(" ")[1]).first()
 	lot.status = "active"
-	active_lots = models.ActiveLot.query.all()
-	if len(active_lots) == 0:
-		users = models.BotUser.query.all()
-		for i in users:
-			try:
-				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["message_four"].format(i.coins))
-				time.sleep(0.03)
-				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["new_lot"].format(lot.cost), reply_markup=create_markup(text["bet"]["bet"]))
-				time.sleep(0.03)
-				bot.send_photo(i.user_id, lot.pic, lot.disc)
-				time.sleep(0.03)
-			except Exception as e:
-				print(e, i)
-				continue
 	db.session.add(models.ActiveLot(lot_id=lot.id, cost=lot.cost))
 	db.session.commit()
 		
@@ -860,8 +821,9 @@ def accept_coins(call):
 
 		
 		
-"""	
 
+
+"""
 bot.remove_webhook()
 if __name__ == '__main__':
 	bot.polling(none_stop=True)
@@ -885,7 +847,7 @@ if __name__ == "__main__":
   app.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000))) 
   print("START")
 
-
+"""	
 
 # template #
 '''
@@ -893,10 +855,5 @@ content_types=['video', 'document', 'audio', 'voice', 'photo', 'text'],
 with open(f"./photos/{}","rb") as file:
 	file = file.read()
 bot.send_video'message'from_user'id, file)
-@bot.message_handler(func=lambda message: True and)
-@log
-def message_handler(message):
-@bot.callback_query_handler(func=lambda call: True and)
-@log
-def callback_handler(call):
+
 '''
