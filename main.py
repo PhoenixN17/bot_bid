@@ -632,7 +632,7 @@ def apanel_view_chain(call):
 	text = language_check()
 	bot.delete_message(call.from_user.id, call.message.message_id)
 	bot.send_message(call.from_user.id, text["apanel"]["chain"]["menu"], reply_markup=create_inlineKeyboard(text["apanel"]["chain"]["buttons"], 2))
-'''
+
 
 # Создание цепочик
 @bot.callback_query_handler(func=lambda call: True and call.data.split(" ")[0] == "create_chain")
@@ -677,7 +677,7 @@ def accept_chain_message(message):
 
 
 	fsm.set_state(message.from_user.id, "chain_send_message", name=tmp[1]["name"], args=tmp[1]["args"])
-'''
+
 
 # Отправка цепочки
 @bot.callback_query_handler(func=lambda call: True and call.data == "send_chain")
@@ -718,7 +718,7 @@ def apanel_send_chain(call):
 	bot.send_message(call.from_user.id, language_check()["apanel"]["chain"]["sended"])
 
 
-'''
+
 # Удаление цепочки
 @bot.callback_query_handler(func=lambda call: True and call.data == "del_chain")
 @log
@@ -748,7 +748,7 @@ def apanel_del_chain(call):
 
 
 
-'''
+
 
 
 
