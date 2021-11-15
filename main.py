@@ -102,7 +102,7 @@ def quiz_send(message):
 					text = language_check()
 					bot.send_message(message.from_user.id, text["quiz"]["end"])
 					bot.send_message(message.from_user.id, text["quiz"]["count"].format(count), reply_markup=create_markup(text["quiz"]["start_quiz"]))
-					user = models.BotUser.query.filter_by(user_id=message.from_user.id)
+					user = models.BotUser.query.filter_by(user_id=message.from_user.id).first()
 					if user.coins < count + 10:
 						user.coins = count + 10
 						db.session.commit()
@@ -655,31 +655,29 @@ def apanel_send_lot(call):
 @bot.callback_query_handler(func=lambda call: True and call.data.split(" ")[0] == "chose_lot")
 @log
 def apanel_accept_send(call):
-	try:
-		bot.delete_message(call.from_user.id, call.message.message_id)
-		text = language_check()
-		lot = models.Auc.query.filter_by(id=call.data.split(" ")[1]).first()
-		lot.status = "active"
-		active_lots = models.ActiveLot.query.all()
-		if len(active_lots) == 0:
-			users = models.BotUser.query.all()
-			for i in users:
-				try:
-					bot.send_message(i.user_id, text["apanel"]["chose_lot"]["message_four"].format(i.coins))
-					time.sleep(0.03)
-					bot.send_message(i.user_id, text["apanel"]["chose_lot"]["new_lot"].format(lot.cost), reply_markup=create_markup(text["bet"]["bet"]))
-					time.sleep(0.03)
-					bot.send_photo(i.user_id, lot.pic, lot.disc)
-					time.sleep(0.03)
-				except Exception as e:
-					print(e, i)
-					continue
-		db.session.add(models.ActiveLot(lot_id=lot.id, cost=lot.cost))
-		db.session.commit()
+#	bot.delete_message(call.from_user.id, call.message.message_id)
+	text = language_check()
+	lot = models.Auc.query.filter_by(id=call.data.split(" ")[1]).first()
+	lot.status = "active"
+	active_lots = models.ActiveLot.query.all()
+	if len(active_lots) == 0:
+		users = models.BotUser.query.all()
+		for i in users:
+			try:
+				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["message_four"].format(i.coins))
+				time.sleep(0.03)
+				bot.send_message(i.user_id, text["apanel"]["chose_lot"]["new_lot"].format(lot.cost), reply_markup=create_markup(text["bet"]["bet"]))
+				time.sleep(0.03)
+				bot.send_photo(i.user_id, lot.pic, lot.disc)
+				time.sleep(0.03)
+			except Exception as e:
+				print(e, i)
+				continue
+	db.session.add(models.ActiveLot(lot_id=lot.id, cost=lot.cost))
+	db.session.commit()
 		
-		bot.send_message(call.from_user.id, text["apanel"]["chose_lot"]["sended_lot"], reply_markup=create_inlineKeyboard(text["apanel"]["buttons"], 2))
-	except Exception as e:
-		print(e)
+	bot.send_message(call.from_user.id, text["apanel"]["chose_lot"]["sended_lot"], reply_markup=create_inlineKeyboard(text["apanel"]["buttons"], 2))
+
 
 
 #-- Цепочки --№
@@ -862,7 +860,7 @@ def accept_coins(call):
 
 		
 		
-"""		
+	
 
 bot.remove_webhook()
 if __name__ == '__main__':
@@ -887,7 +885,7 @@ if __name__ == "__main__":
   app.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000))) 
   print("START")
 
-
+"""	
 
 # template #
 '''
