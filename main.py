@@ -13,7 +13,9 @@ from tool import language_check, log, create_inlineKeyboard, create_markup
 from app import bot, tbf, fsm, db, app
 from flask import request
 
-print(-1)
+
+
+
 global quiz_status
 quiz_status = True
 
@@ -813,19 +815,17 @@ def accept_coins(call):
 	bot.send_message(call.from_user.id, text["mod"]["success"].format(call.data.split(" ")[1], call.data.split(" ")[2]))
 	user.coins = user.coins + int(call.data.split(" ")[2])
 	bot.send_message(user.user_id, text["functions"]["get"].format(call.data.split(" ")[2]))
-	bot.send_message(config.balance_group_id, text["logs"]["offline"].format(f"{mod.surname} {mod.name}", f"{user.surname} {user.name}", call.data.split(" ")[2]))
 	db.session.commit()
 	fsm.reset_state(call.from_user.id)
 
+
 """
-
-
 bot.remove_webhook()
 if __name__ == '__main__':
 	bot.polling(none_stop=True)
 
-"""
 
+"""
 
 @app.route('/' + config.TOKEN, methods=['POST'])
 def getMessage():
