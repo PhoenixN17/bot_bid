@@ -550,8 +550,8 @@ def accept_mail(message):
 	bot.send_sticker(message.from_user.id, "CAACAgIAAxkBAAIFc2GMDgAB3zqME8BnshYFgiqXiZqgWwACcREAAkWIYUglPsZ0uJ5pPSIE")
 	bot.send_message(message.from_user.id, text["register"]["first_message"].format(tmp[1]["name"], tmp[1]["fil_name"]))
 	bot.send_message(message.from_user.id, text["register"]["second_message"])
-	bot.send_message(message.from_user.id, text["register"]["third_message"])
-	#bot.send_message(message.from_user.id, text["register"]["third_message"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
+	#bot.send_message(message.from_user.id, text["register"]["third_message"])
+	bot.send_message(message.from_user.id, text["register"]["third_message"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
 	fsm.reset_state(message.from_user.id)
 
 
