@@ -18,23 +18,24 @@ from flask import request
 global quiz_status
 quiz_status = True
 
+'''
+user = models.BotUser.query.filter_by(id=223).first()
+print(user)
+#count = 0
+#lot = [i.id for i in models.Auc.query.all()]
+#lots = [x.lot_id for x in models.CompleteQuiz.query.filter_by(user_id=user.user_id).all()]
+#print(len(lot), len(lots))
 
-#users = models.BotUser.query.all()
-#for i in users:
-#	print(i)
-#	count = 0
-#	for x in models.CompleteQuiz.query.filter_by(user_id=i.user_id).all():
-#		if x.status == "win":
-#			count += int(x.cost)
 
-#	if i.coins < count + 10:
-#		i.coins = count + 10
 
+#if i.coins < count + 10:
+	#i.coins = count + 10
+#print(user.coins, count)
 #db.session.commit()
 
 
 
-
+'''
 
 # ------ Викторина ------ #
 # выдача
@@ -298,6 +299,7 @@ def accept_fil_surname(message):
 @bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_rank")
 @log
 def accept_rank(message):
+	print("rank")
 	tmp = fsm.get_state(message.from_user.id)
 	text = language_check()
 	bot.send_message(message.from_user.id, text["register"]["enter_mail"])	
@@ -308,6 +310,7 @@ def accept_rank(message):
 @bot.message_handler(func=lambda message: True and fsm.get_state(message.from_user.id)[0] == "enter_mail")
 @log
 def accept_mail(message):
+	print("mail")
 	tmp = fsm.get_state(message.from_user.id)
 	text = language_check()
 
@@ -339,8 +342,8 @@ def top_lader(message):
 
 		
 		
-		
-"""
+"""		
+
 bot.remove_webhook()
 if __name__ == '__main__':
 	bot.polling(none_stop=True)
