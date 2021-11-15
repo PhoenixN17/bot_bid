@@ -80,6 +80,114 @@ def accept_coins(call):
 
 
 
+# ------ Викторина ------ #
+# выдача
+@bot.message_handler(func=lambda message: True and message.text in [language_check()["quiz"]["start_quiz"], language_check()["quiz"]["next_question"]])
+@log
+def quiz_send(message):
+	print(2, quiz_status)
+	if quiz_status == True:
+		active_lots = models.Auc.query.filter_by(status="active").all()
+		print(active_lots)
+		if len(active_lots) == 0:
+			print(2.1)
+			if message.text == language_check()["quiz"]["start_quiz"]:
+				all_quiz = [i.id for i in models.Quiz.query.all()]
+				user_complete_quiz = [i.quiz_id for i in models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()]
+				for i in all_quiz:
+					if i not in user_complete_quiz:
+						text = language_check()
+						user = models.BotUser.query.filter_by(user_id=message.from_user.id).first()
+						bot.send_message(message.from_user.id, text["quiz"]["third_message"], reply_markup=create_markup(text["quiz"]["next_question"]))
+						break
+			else:
+				print(3)
+				quiz = []
+				all_quiz = models.Quiz.query.all()
+				user_complete_quiz = models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()
+				# Убираем пройденые викторины и сортируем список
+				complete_quiz = [i.quiz_id for i in user_complete_quiz]
+				for i in all_quiz:
+					if i.id in complete_quiz:
+						continue
+					quiz.append(i)
+
+				if len(quiz) != 0:
+					# -- Выдача случайного вопроса -- #
+					quiz = random.choice(quiz)
+						
+					  # генерация главиатуры для викторины #
+					quiz_buttons = [i for i in pickle.loads(quiz.false)]
+					quiz_buttons.append(quiz.answer)
+					quiz_button = random.shuffle(quiz_buttons)
+					quiz_keyboard = {}
+					for i in range(len(quiz_buttons)):
+						quiz_keyboard[quiz_buttons[i]] = f"answer_quiz {quiz.id} {i}"
+
+						
+					  # Отправка #
+					if quiz.quiz_type == "text":
+						bot.send_message(message.from_user.id, quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
+					elif quiz.quiz_type == "photo":
+						bot.send_photo(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
+					elif quiz.quiz_type == "video":
+						bot.send_video(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
+					elif quiz.quiz_type == "audio":
+						bot.send_audio(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
+				else:
+					count = 0
+					for i in user_complete_quiz:
+						if i.status == "win":
+							count += int(i.cost)
+					text = language_check()
+					bot.send_message(message.from_user.id, text["quiz"]["end"])
+					bot.send_message(message.from_user.id, text["quiz"]["count"].format(count), reply_markup=create_markup(text["quiz"]["start_quiz"]))
+					return
+
+
+
+# Обработка ответа
+@bot.callback_query_handler(func=lambda call: True and call.data.split(" ")[0] == "answer_quiz")
+@log
+def quiz_accept_answer(call):
+	try:
+		bot.delete_message(call.from_user.id, call.message.message_id)
+		answer_status = models.CompleteQuiz.query.filter_by(quiz_id=call.data.split(" ")[1], user_id=call.from_user.id).first()
+		# Проверка не проходил ли раньше пользователь этот вопрос
+		if answer_status == None:
+			quiz = models.Quiz.query.filter_by(id=call.data.split(" ")[1]).first()
+			user = models.BotUser.query.filter_by(user_id=call.from_user.id).first()
+			text = language_check()
+			# Получаем ответ
+			for i in call.message.json["reply_markup"]["inline_keyboard"]:
+				for x in i:
+					if x["callback_data"] == call.data:
+						answer = x["text"]
+						break
+			
+			# Выдаём результат
+			if answer == quiz.answer:
+				user.coins = user.coins + quiz.cost
+				db.session.commit()
+				bot.send_message(call.from_user.id, random.choice(text["quiz"]["correct_answers"]).format(quiz.cost), reply_markup=create_markup(text["quiz"]["next_question"]))
+				db.session.add(models.CompleteQuiz(quiz_id=quiz.id, user_id=call.from_user.id, status="win", cost=quiz.cost))
+				if random.randint(1, 5) == 5:
+					bot.send_message(config.quiz_group_id, text["logs"]["answer"].format(f"{user.surname} {user.name}", quiz.id, quiz.cost))
+			else:
+				bot.send_message(call.from_user.id, text["quiz"]["incorrect_answer"], reply_markup=create_markup(text["quiz"]["next_question"]))
+				db.session.add(models.CompleteQuiz(quiz_id=quiz.id, user_id=call.from_user.id, status="lose", cost=quiz.cost))
+
+			db.session.commit()
+	except Exception as e:
+		print(e)
+
+
+
+
+
+
+
+
 
 
 
@@ -619,109 +727,6 @@ def accept_mail(message):
 	#bot.send_message(message.from_user.id, text["register"]["third_message"])
 	bot.send_message(message.from_user.id, text["register"]["third_message"], reply_markup=create_markup(text["quiz"]["start_quiz"]))
 	fsm.reset_state(message.from_user.id)
-
-
-
-# ------ Викторина ------ #
-# выдача
-@bot.message_handler(func=lambda message: True and message.text in [language_check()["quiz"]["start_quiz"], language_check()["quiz"]["next_question"]])
-@log
-def quiz_send(message):
-	print(2, quiz_status)
-	if quiz_status == True:
-		active_lots = models.Auc.query.filter_by(status="active").all()
-		print(active_lots)
-		if len(active_lots) == 0:
-			print(2.1)
-			if message.text == language_check()["quiz"]["start_quiz"]:
-				all_quiz = [i.id for i in models.Quiz.query.all()]
-				user_complete_quiz = [i.quiz_id for i in models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()]
-				for i in all_quiz:
-					if i not in user_complete_quiz:
-						text = language_check()
-						user = models.BotUser.query.filter_by(user_id=message.from_user.id).first()
-						bot.send_message(message.from_user.id, text["quiz"]["third_message"], reply_markup=create_markup(text["quiz"]["next_question"]))
-						break
-			else:
-				print(3)
-				quiz = []
-				all_quiz = models.Quiz.query.all()
-				user_complete_quiz = models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()
-				# Убираем пройденые викторины и сортируем список
-				complete_quiz = [i.quiz_id for i in user_complete_quiz]
-				for i in all_quiz:
-					if i.id in complete_quiz:
-						continue
-					quiz.append(i)
-
-				if len(quiz) != 0:
-					# -- Выдача случайного вопроса -- #
-					quiz = random.choice(quiz)
-						
-					  # генерация главиатуры для викторины #
-					quiz_buttons = [i for i in pickle.loads(quiz.false)]
-					quiz_buttons.append(quiz.answer)
-					quiz_button = random.shuffle(quiz_buttons)
-					quiz_keyboard = {}
-					for i in range(len(quiz_buttons)):
-						quiz_keyboard[quiz_buttons[i]] = f"answer_quiz {quiz.id} {i}"
-
-						
-					  # Отправка #
-					if quiz.quiz_type == "text":
-						bot.send_message(message.from_user.id, quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
-					elif quiz.quiz_type == "photo":
-						bot.send_photo(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
-					elif quiz.quiz_type == "video":
-						bot.send_video(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
-					elif quiz.quiz_type == "audio":
-						bot.send_audio(message.from_user.id, quiz.quiz_media_id, caption=quiz.question, reply_markup=create_inlineKeyboard(quiz_keyboard, 2))
-				else:
-					count = 0
-					for i in user_complete_quiz:
-						if i.status == "win":
-							count += int(i.cost)
-					text = language_check()
-					bot.send_message(message.from_user.id, text["quiz"]["end"])
-					bot.send_message(message.from_user.id, text["quiz"]["count"].format(count), reply_markup=create_markup(text["quiz"]["start_quiz"]))
-					return
-
-
-
-# Обработка ответа
-@bot.callback_query_handler(func=lambda call: True and call.data.split(" ")[0] == "answer_quiz")
-@log
-def quiz_accept_answer(call):
-	try:
-		bot.delete_message(call.from_user.id, call.message.message_id)
-		answer_status = models.CompleteQuiz.query.filter_by(quiz_id=call.data.split(" ")[1], user_id=call.from_user.id).first()
-		# Проверка не проходил ли раньше пользователь этот вопрос
-		if answer_status == None:
-			quiz = models.Quiz.query.filter_by(id=call.data.split(" ")[1]).first()
-			user = models.BotUser.query.filter_by(user_id=call.from_user.id).first()
-			text = language_check()
-			# Получаем ответ
-			for i in call.message.json["reply_markup"]["inline_keyboard"]:
-				for x in i:
-					if x["callback_data"] == call.data:
-						answer = x["text"]
-						break
-			
-			# Выдаём результат
-			if answer == quiz.answer:
-				user.coins = user.coins + quiz.cost
-				db.session.commit()
-				bot.send_message(call.from_user.id, random.choice(text["quiz"]["correct_answers"]).format(quiz.cost), reply_markup=create_markup(text["quiz"]["next_question"]))
-				db.session.add(models.CompleteQuiz(quiz_id=quiz.id, user_id=call.from_user.id, status="win", cost=quiz.cost))
-				if random.randint(1, 5) == 5:
-					bot.send_message(config.quiz_group_id, text["logs"]["answer"].format(f"{user.surname} {user.name}", quiz.id, quiz.cost))
-			else:
-				bot.send_message(call.from_user.id, text["quiz"]["incorrect_answer"], reply_markup=create_markup(text["quiz"]["next_question"]))
-				db.session.add(models.CompleteQuiz(quiz_id=quiz.id, user_id=call.from_user.id, status="lose", cost=quiz.cost))
-
-			db.session.commit()
-	except Exception as e:
-		print(e)
 
 
 
