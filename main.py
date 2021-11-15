@@ -627,12 +627,9 @@ def accept_mail(message):
 @bot.message_handler(func=lambda message: True and message.text in [language_check()["quiz"]["start_quiz"], language_check()["quiz"]["next_question"]])
 @log
 def quiz_send(message):
-	print(2, quiz_status)
 	if quiz_status == True:
 		active_lots = models.Auc.query.filter_by(status="active").all()
-		print(active_lots)
 		if len(active_lots) == 0:
-			print(2.1)
 			if message.text == language_check()["quiz"]["start_quiz"]:
 				all_quiz = [i.id for i in models.Quiz.query.all()]
 				user_complete_quiz = [i.quiz_id for i in models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()]
@@ -642,8 +639,8 @@ def quiz_send(message):
 						user = models.BotUser.query.filter_by(user_id=message.from_user.id).first()
 						bot.send_message(message.from_user.id, text["quiz"]["third_message"], reply_markup=create_markup(text["quiz"]["next_question"]))
 						break
+				print("finish", message.from_user.id)
 			else:
-				print(3)
 				quiz = []
 				all_quiz = models.Quiz.query.all()
 				user_complete_quiz = models.CompleteQuiz.query.filter_by(user_id=message.from_user.id).all()
@@ -802,7 +799,6 @@ def bet(message):
 
 @bot.message_handler(func=lambda message: True and message.text in ['/start_quiz', "/stop_quiz"])
 def quiz_statuss(message):
-	print(message)
 	global quiz_status
 	if message.from_user.id in config.admin:
 		users = models.BotUser.query.all()
