@@ -21,6 +21,7 @@ quiz_status = True
 
 
 
+
 # ------ Викторина ------ #
 # выдача
 @bot.message_handler(func=lambda message: True and message.text in [language_check()["quiz"]["start_quiz"], language_check()["quiz"]["next_question"]])
