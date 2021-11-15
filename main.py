@@ -318,7 +318,14 @@ def accept_mail(message):
 
 	
 		
-		
+def top_lader(message):
+	if message.from_user.id in config.mod:
+		list_of_best = ""
+		count = 1
+		for i in models.BotUser.query.order_by(models.BotUser.coins.desc()).all()[:13]:
+			list_of_best += f"{count}. {i.name} {i.surname} - {i.coins} Freedom-Coin\n"
+			count += 1
+		bot.send_message(config.balance_group_id, list_of_best)		
 		
 		
 		
