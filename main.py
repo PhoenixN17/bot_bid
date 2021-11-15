@@ -708,11 +708,11 @@ def apanel_send_chain(call):
 			for i in parts:
 				print(i)
 				if i[0] == "photo":
-					bot1.send_photo(user.user_id, i[1], caption=i[2])
+					bot.send_photo(user.user_id, i[1], caption=i[2])
 				elif i[0] == "video":
-					bot1.send_video(user.user_id, i[1], caption=i[2])
+					bot.send_video(user.user_id, i[1], caption=i[2])
 				elif i[0] == "text":
-					bot1.send_message(user.user_id, i[2])
+					bot.send_message(user.user_id, i[2])
 		except Exception as e:
 			print(e)
 	bot.send_message(call.from_user.id, language_check()["apanel"]["chain"]["sended"])
@@ -794,7 +794,7 @@ def accept_coins(call):
 	mod = models.BotUser.query.filter_by(user_id=call.from_user.id).first()
 	bot.send_message(call.from_user.id, text["mod"]["success"].format(call.data.split(" ")[1], call.data.split(" ")[2]))
 	user.coins = user.coins + int(call.data.split(" ")[2])
-	bot1.send_message(user.user_id, text["functions"]["get"].format(call.data.split(" ")[2]))
+	bot.send_message(user.user_id, text["functions"]["get"].format(call.data.split(" ")[2]))
 	db.session.commit()
 	fsm.reset_state(call.from_user.id)
 
