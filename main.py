@@ -135,7 +135,8 @@ def quiz_accept_answer(call):
 @bot.message_handler(commands=['my_wallet'])
 def my_wallet(message):
 	user = models.BotUser.query.filter_by(user_id=message.from_user.id).first()
-	bot.send_message(message.from_user.id, language_check()["functions"]["wallet"].format(user.coins))
+	if user:
+		bot.send_message(message.from_user.id, language_check()["functions"]["wallet"].format(user.coins))
 
 
 
@@ -487,7 +488,7 @@ def apanel_end_lot_accept(call):
 
 		db.session.commit()
 		bot.send_message(call.from_user.id, text["apanel"]["end_lot"]["successfully"], reply_markup=create_inlineKeyboard(text["apanel"]["buttons"], 2))
-		bot.send_message(config.auc_group_id, text["logs"]["win"].format(f"{player.surname} {player.name}", lot[0][0].name, lot[0][1].cost))
+		bot.send_message(config.auc_group_id, text["logs"]["win"].format(f"{user.surname} {user.name}", lot[0][0].name, lot[0][1].cost))
 
 		# Сообщение о новом лоте
 		active_lot = models.ActiveLot.query.first()
@@ -815,7 +816,7 @@ def callback_handler(call):
 """
 
 
-
+"""	
 bot.remove_webhook()
 if __name__ == '__main__':
 	bot.polling(none_stop=True)
@@ -839,7 +840,7 @@ if __name__ == "__main__":
   app.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000))) 
   print("START")
 
-"""	
+
 
 # template #
 '''
